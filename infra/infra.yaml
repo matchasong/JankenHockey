@@ -1,0 +1,287 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: WebHosting for JankenHockey with Origin Access Control
+
+Parameters:
+  LambdaBucket:
+    Type: String
+    Description: S3 bucket name for Lambda function Zip file.
+  LambdaZipFile:
+    Type: String
+    Description: Lambda function Zip Package file name.
+
+Resources:
+  # S3バケット
+  JankenHockeyAppBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: janken-hockey-website-bucket
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: JankenHockey
+
+  # S3バケットポリシー
+  JankenHockeyBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JankenHockeyBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowCloudFrontAccess
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action:
+              - s3:GetObject
+            Resource: !Sub 'arn:aws:s3:::${JankenHockeyBucket}/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${JankenHockeyCloudFrontDistribution}'
+
+  # オリジンアクセスコントロール
+  JankenHockeyOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: JankenHockeyOAC
+        OriginAccessControlOriginType: s3
+        SigningProtocol: sigv4
+        SigningBehavior: always
+
+  # CloudFrontディストリビューション
+  JankenHockeyCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt JankenHockeyBucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+            OriginAccessControlId: !Ref JankenHockeyOriginAccessControl
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+        DefaultRootObject: index.html
+      Tags:
+        - Key: Project
+          Value: JankenHockey
+
+  # DynamoDB
+  JankenHockeyHistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: GameHistory
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: Project
+          Value: JankenHockey
+
+  # Lambda関数
+  JankenHockeyFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: JankenHockeyFunction
+      Handler: main.handler
+      Role: !GetAtt JankenHockeyFunctionRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaBucket
+        S3Key: !Ref LambdaZipFile
+      Runtime: python3.12
+      Timeout: 30
+      Tags:
+        - Key: Project
+          Value: JankenHockey
+
+  # Lambda関数ロール
+  JankenHockeyFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: JankenHockeyFunctionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: JankenHockeyFunctionPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                Resource: !GetAtt JankenHockeyTable.Arn
+
+  ############################
+  # API Gateway
+  ############################
+  # API Gateway IAMロール
+  JankenHockeyAPIRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: JankenHockeyAPIRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: JankenHockeyAPIPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt JankenHockeyQuestionFunction.Arn
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt JankenHockeyAnswerFunction.Arn
+
+  ############################
+  # WebSocket API
+  ############################
+
+  # API Gateway
+  JankenHockeyAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: JankenHockeyAPI
+      Tags:
+        - Key: Project
+          Value: JankenHockey
+  
+  # API Gateway ロググループ
+  MyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join
+        - '-'
+        - - !Ref JankenHockeyAPI
+          - access-logs
+
+  # API Gatewayリソース
+  JankenHockeyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref JankenHockeyAPI
+      ParentId: !GetAtt JankenHockeyAPI.RootResourceId
+      PathPart: answer
+
+  # POSTのエンドポイント
+  JankenHockeyPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref JankenHockeyResource
+      RestApiId: !Ref JankenHockeyAPI
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AnswerLambda}/invocations
+          - AnswerLambda: !GetAtt JankenHockeyAnswerFunction.Arn
+        Credentials: !GetAtt JankenHockeyAPIRole.Arn
+  
+  # OPTIONのエンドポイント
+  JankenHockeyOptionMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      ResourceId: !Ref JankenHockeyResource
+      RestApiId: !Ref JankenHockeyAPI
+      Integration:
+        Type: MOCK
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: '200'
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+      MethodResponses:
+        - StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+          ResponseModels:
+            application/json: Empty
+
+  # Lambda権限
+  JankenHockeyAnswerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt JankenHockeyFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/answer
+
+  # API Gateway デプロイメント
+  ProdDeployment:
+    DependsOn: [JankenHockeyPostMethod]
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref JankenHockeyAPI
+      Description: 'JankenHockey API Prod Deployment'
+
+  # API Gateway ステージおよびログ出力設定
+  ProdStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: prod
+      RestApiId: !Ref JankenHockeyAPI
+      DeploymentId: !Ref ProdDeployment
+      Description: 'JankenHockey API Prod Stage'
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          LoggingLevel: INFO
+      AccessLogSetting:
+        DestinationArn: !GetAtt MyLogGroup.Arn
+        Format: $context.extendedRequestId $context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId
+      CacheClusterEnabled: true
