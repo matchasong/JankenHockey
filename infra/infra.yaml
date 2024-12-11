@@ -15,7 +15,7 @@ Resources:
   ############################
   ## S3
   # S3バケット
-  JankenHockeyAppBucket:
+  JankenHockeyBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: janken-hockey-website-bucket
