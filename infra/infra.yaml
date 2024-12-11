@@ -191,12 +191,12 @@ Resources:
                 Resource: !GetAtt JankenHockeyAnswerFunction.Arn
   # API
   JankenHockeyAPI:
-  Type: 'AWS::ApiGatewayV2::Api'
-  Properties:
-    Name: MyApi
-    ProtocolType: WEBSOCKET
-    RouteSelectionExpression: $request.body.action
-    ApiKeySelectionExpression: $request.header.x-api-key
+    Type: 'AWS::ApiGatewayV2::Api'
+    Properties:
+      Name: MyApi
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: $request.body.action
+      ApiKeySelectionExpression: $request.header.x-api-key
   
   # API Gateway ロググループ
   MyLogGroup:
