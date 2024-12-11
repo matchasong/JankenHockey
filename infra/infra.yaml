@@ -10,6 +10,10 @@ Parameters:
     Description: Lambda function Zip Package file name.
 
 Resources:
+  ############################
+  # WebHosting
+  ############################
+  ## S3
   # S3バケット
   JankenHockeyAppBucket:
     Type: AWS::S3::Bucket
@@ -45,7 +49,8 @@ Resources:
             Condition:
               StringEquals:
                 AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${JankenHockeyCloudFrontDistribution}'
-
+  
+  ## CloudFront
   # オリジンアクセスコントロール
   JankenHockeyOriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
@@ -88,6 +93,10 @@ Resources:
         - Key: Project
           Value: JankenHockey
 
+  ############################
+  # API
+  ############################
+  ## DynamoDB
   # DynamoDB
   JankenHockeyHistoryTable:
     Type: AWS::DynamoDB::Table
@@ -104,6 +113,7 @@ Resources:
         - Key: Project
           Value: JankenHockey
 
+  ## Lambda
   # Lambda関数
   JankenHockeyFunction:
     Type: AWS::Lambda::Function
@@ -148,10 +158,12 @@ Resources:
                   - dynamodb:GetItem
                   - dynamodb:PutItem
                 Resource: !GetAtt JankenHockeyTable.Arn
+              - Effect: Allow
+                Action:
+                  - execute-api:Invoke
+                Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
 
-  ############################
-  # API Gateway
-  ############################
+  ## API Gateway
   # API Gateway IAMロール
   JankenHockeyAPIRole:
     Type: AWS::IAM::Role
@@ -177,19 +189,14 @@ Resources:
                 Action:
                   - lambda:InvokeFunction
                 Resource: !GetAtt JankenHockeyAnswerFunction.Arn
-
-  ############################
-  # WebSocket API
-  ############################
-
-  # API Gateway
+  # API
   JankenHockeyAPI:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      Name: JankenHockeyAPI
-      Tags:
-        - Key: Project
-          Value: JankenHockey
+  Type: 'AWS::ApiGatewayV2::Api'
+  Properties:
+    Name: MyApi
+    ProtocolType: WEBSOCKET
+    RouteSelectionExpression: $request.body.action
+    ApiKeySelectionExpression: $request.header.x-api-key
   
   # API Gateway ロググループ
   MyLogGroup:
@@ -200,88 +207,54 @@ Resources:
         - - !Ref JankenHockeyAPI
           - access-logs
 
-  # API Gatewayリソース
-  JankenHockeyResource:
-    Type: AWS::ApiGateway::Resource
+  # API Gateway デフォルトルート
+  JankenHockeyAPIDefaultRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
     Properties:
-      RestApiId: !Ref JankenHockeyAPI
-      ParentId: !GetAtt JankenHockeyAPI.RootResourceId
-      PathPart: answer
+      ApiId: !Ref JankenHockeyAPI
+      RouteKey: $default
+      Target: !Sub 'integrations/${JankenHockeyAPIIntegration}'
 
-  # POSTのエンドポイント
-  JankenHockeyPostMethod:
-    Type: AWS::ApiGateway::Method
+  # API Gateway デフォルト統合
+  JankenHockeyAPIIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
     Properties:
-      AuthorizationType: NONE
-      HttpMethod: POST
-      ResourceId: !Ref JankenHockeyResource
-      RestApiId: !Ref JankenHockeyAPI
-      Integration:
-        IntegrationHttpMethod: POST
-        Type: AWS_PROXY
-        Uri: !Sub
-          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AnswerLambda}/invocations
-          - AnswerLambda: !GetAtt JankenHockeyAnswerFunction.Arn
-        Credentials: !GetAtt JankenHockeyAPIRole.Arn
-  
-  # OPTIONのエンドポイント
-  JankenHockeyOptionMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      AuthorizationType: NONE
-      HttpMethod: OPTIONS
-      ResourceId: !Ref JankenHockeyResource
-      RestApiId: !Ref JankenHockeyAPI
-      Integration:
-        Type: MOCK
-        PassthroughBehavior: WHEN_NO_MATCH
-        RequestTemplates:
-          application/json: '{"statusCode": 200}'
-        IntegrationResponses:
-          - StatusCode: '200'
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              method.response.header.Access-Control-Allow-Methods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
-      MethodResponses:
-        - StatusCode: '200'
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-            method.response.header.Access-Control-Allow-Origin: true
-          ResponseModels:
-            application/json: Empty
+      ApiId: !Ref JankenHockeyAPI
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeyLambdaFunction.Arn}/invocations'
+      PayloadFormatVersion: '2.0'
 
   # Lambda権限
-  JankenHockeyAnswerPermission:
+  JankenHockeyPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt JankenHockeyFunction.Arn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/answer
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
 
   # API Gateway デプロイメント
-  ProdDeployment:
-    DependsOn: [JankenHockeyPostMethod]
-    Type: AWS::ApiGateway::Deployment
+  JankenHockeyAPIDeployment:
+    Type: 'AWS::ApiGatewayV2::Deployment'
     Properties:
-      RestApiId: !Ref JankenHockeyAPI
-      Description: 'JankenHockey API Prod Deployment'
+      ApiId: !Ref JankenHockeyAPI
+    DependsOn:
+      - JankenHockeyAPIDefaultRoute
+      - JankenHockeyAPIIntegration
 
   # API Gateway ステージおよびログ出力設定
-  ProdStage:
-    Type: AWS::ApiGateway::Stage
+  JankenHockeyAPIStage:
+    Type: 'AWS::ApiGatewayV2::Stage'
     Properties:
+      ApiId: !Ref JankenHockeyAPI
+      DeploymentId: !Ref JankenHockeyAPIDeployment
       StageName: prod
-      RestApiId: !Ref JankenHockeyAPI
-      DeploymentId: !Ref ProdDeployment
-      Description: 'JankenHockey API Prod Stage'
-      MethodSettings:
-        - ResourcePath: '/*'
-          HttpMethod: '*'
-          LoggingLevel: INFO
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: true
+        LoggingLevel: INFO
+        DataTraceEnabled: false
+        ThrottlingBurstLimit: 10
+        ThrottlingRateLimit: 10
       AccessLogSetting:
         DestinationArn: !GetAtt MyLogGroup.Arn
         Format: $context.extendedRequestId $context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId
-      CacheClusterEnabled: true
