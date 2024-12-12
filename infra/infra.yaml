@@ -221,7 +221,7 @@ Resources:
     Properties:
       ApiId: !Ref JankenHockeyAPI
       IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeyLambdaFunction.Arn}/invocations'
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeyFunction.Arn}/invocations'
       PayloadFormatVersion: '2.0'
 
   # Lambda権限
