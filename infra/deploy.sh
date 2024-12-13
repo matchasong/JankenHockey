@@ -16,7 +16,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # zipファイル名を取得
-LAMBDA_ZIP_FILE=$(ls -1 | grep $LAMBDA_ZIP_PREFIX | tail -n 1)".zip"
+LAMBDA_ZIP_FILE=$(ls -1 | grep $LAMBDA_ZIP_PREFIX | tail -n 1)
 if [ -z $LAMBDA_ZIP_FILE ]; then
     echo 'Lambda zip file not found'
     echo 'Aborting...'
