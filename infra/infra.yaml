@@ -251,6 +251,11 @@ Resources:
         DataTraceEnabled: false
         ThrottlingBurstLimit: 10
         ThrottlingRateLimit: 10
-      AccessLogSetting:
+      AccessLogSettings:
         DestinationArn: !GetAtt MyLogGroup.Arn
-        Format: $context.extendedRequestId $context.identity.sourceIp $context.identity.caller $context.identity.user [$context.requestTime] "$context.httpMethod $context.resourcePath $context.protocol" $context.status $context.responseLength $context.requestId
+        Format: >-
+        {"requestId":"$context.requestId", "ip": "$context.identity.sourceIp",
+        "caller":"$context.identity.caller",
+        "user":"$context.identity.user","requestTime":"$context.requestTime",
+        "eventType":"$context.eventType","routeKey":"$context.routeKey",
+        "status":"$context.status","connectionId":"$context.connectionId"}
