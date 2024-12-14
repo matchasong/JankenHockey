@@ -29,7 +29,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: yarn install
         run: |
-          yarn install
+          cd frontend;pwd;yarn install
       - name: eslint
         run: |
           cd frontend;pwd;yarn lint
