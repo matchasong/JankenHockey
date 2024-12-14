@@ -28,16 +28,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: change directory
-        run: cd frontend;pwd
+        run: 
       - name: yarn install
         run: |
           yarn install
       - name: eslint
         run: |
-          yarn lint
+          cd frontend;pwd;yarn lint
       - name: build
         run: |
-          yarn run build
+          cd frontend;pwd;yarn run build
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -46,6 +46,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: deploy
         run: |
+          cd frontend;pwd;ls -la
           aws s3 sync --exact-timestamps --delete ./dist s3://${{ secrets.AWS_BUCKET_NAME }}/
 
           if aws cloudfront get-distribution --id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}; then
