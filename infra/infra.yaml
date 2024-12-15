@@ -240,7 +240,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                Resource: !GetAtt JankenHockeySendmessageFunction.Arn
+                Resource: !GetAtt JankenHockeySendMessageFunction.Arn
               - Effect: Allow
                 Action:
                   - lambda:InvokeFunction
