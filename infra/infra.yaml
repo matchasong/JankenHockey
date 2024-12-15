@@ -197,15 +197,9 @@ Resources:
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
-                Resource: arn:aws:logs:*:*:*
-              - Effect: Allow
-                Action:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: 
-                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/JankenHockeyConnectFunction:*
-                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/JankenHockeySendMessageFunction:*
-                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/JankenHockeyDisconnectFunction:*
+                Resource: arn:aws:logs:*:*:*
               - Effect: Allow
                 Action:
                   - dynamodb:GetItem
@@ -285,7 +279,6 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeyConnectFunction.Arn}/invocations'
       PayloadFormatVersion: 1.0
-      Credentials: !GetAtt JankenHockeyAPIRole.Arn
 
   # Disconnect Route
   JankenHockeyAPIDisconnectRoute:
