@@ -301,7 +301,7 @@ Resources:
     Type: 'AWS::ApiGatewayV2::Route'
     Properties:
       ApiId: !Ref JankenHockeyAPI
-      RouteKey: sendMessage
+      RouteKey: $sendMessage
       Target: !Sub 'integrations/${JankenHockeyAPISendMessageIntegration}'
 
   JankenHockeyAPISendMessageIntegration:
