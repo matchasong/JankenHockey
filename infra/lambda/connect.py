@@ -1,21 +1,30 @@
 import json
+import os
 
 import boto3
 
-HISTORY_TABLE_NAME = "GameHistory"
+CONNECTION_TABLE_NAME = "Connection"
 
 # Dynamodbに接続
 dynamodb = boto3.resource("dynamodb")
-hisotry_table = dynamodb.Table(HISTORY_TABLE_NAME)
+connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
 
 
 def handler(event, context):
     """
     handler
     """
+    print(f"START {os.path.basename(__file__)}")
+
+    connection_id = event.get('requestContext', {}).get('connectionId')
+    result = connection_table.put_item(Item={'id': connection_id})
+
+    print(result)
+    print(f"END {os.path.basename(__file__)}")
+
     return {
         "statusCode": 200,
-        "body": json.dumps("Hello from Lambda!"),
+        "body": "connect ok",
         "headers": {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Headers": "Content-Type",

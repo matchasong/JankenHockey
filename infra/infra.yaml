@@ -113,13 +113,60 @@ Resources:
         - Key: Project
           Value: JankenHockey
 
+  JankenHockeyConnectionTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Connection
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: Project
+          Value: JankenHockey
+
   ## Lambda
   # Lambda関数
-  JankenHockeyFunction:
+  JankenHockeyConnectFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: JankenHockeyFunction
-      Handler: main.handler
+      FunctionName: JankenHockeyConnectFunction
+      Handler: connect.handler
+      Role: !GetAtt JankenHockeyFunctionRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaBucket
+        S3Key: !Ref LambdaZipFile
+      Runtime: python3.12
+      Timeout: 30
+      Tags:
+        - Key: Project
+          Value: JankenHockey
+
+  # Lambda関数
+  JankenHockeySendMessageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: JankenHockeySendMessageFunction
+      Handler: send_message.handler
+      Role: !GetAtt JankenHockeyFunctionRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaBucket
+        S3Key: !Ref LambdaZipFile
+      Runtime: python3.12
+      Timeout: 30
+      Tags:
+        - Key: Project
+          Value: JankenHockey
+
+  # Lambda関数
+  JankenHockeyDisconnectFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: JankenHockeyDisconnectFunction
+      Handler: disconnect.handler
       Role: !GetAtt JankenHockeyFunctionRole.Arn
       Code:
         S3Bucket: !Ref LambdaBucket
@@ -157,6 +204,11 @@ Resources:
                 Action:
                   - dynamodb:GetItem
                   - dynamodb:PutItem
+                Resource: !GetAtt JankenHockeyConnectionTable.Arn
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
                 Resource: !GetAtt JankenHockeyGameHistoryTable.Arn
               - Effect: Allow
                 Action:
@@ -184,7 +236,16 @@ Resources:
               - Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                Resource: !GetAtt JankenHockeyFunction.Arn
+                Resource: !GetAtt JankenHockeyConnectFunction.Arn
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt JankenHockeySendmessageFunction.Arn
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt JankenHockeyDisconnectFunction.Arn
+
   # API
   JankenHockeyAPI:
     Type: 'AWS::ApiGatewayV2::Api'
@@ -203,40 +264,88 @@ Resources:
         - - !Ref JankenHockeyAPI
           - access-logs
 
-  # API Gateway デフォルトルート
-  JankenHockeyAPIDefaultRoute:
+# Connect Route
+  JankenHockeyAPIConnectRoute:
     Type: 'AWS::ApiGatewayV2::Route'
     Properties:
       ApiId: !Ref JankenHockeyAPI
-      RouteKey: $default
-      Target: !Sub 'integrations/${JankenHockeyAPIIntegration}'
+      RouteKey: $connect
+      Target: !Sub 'integrations/${JankenHockeyAPIConnectIntegration}'
 
-  # API Gateway デフォルト統合
-  JankenHockeyAPIIntegration:
+  JankenHockeyAPIConnectIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
     Properties:
       ApiId: !Ref JankenHockeyAPI
       IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeyFunction.Arn}/invocations'
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeyConnectFunction.Arn}/invocations'
       PayloadFormatVersion: 1.0
 
-  # Lambda権限
-  JankenHockeyPermission:
+  # Disconnect Route
+  JankenHockeyAPIDisconnectRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref JankenHockeyAPI
+      RouteKey: $disconnect
+      Target: !Sub 'integrations/${JankenHockeyAPIDisconnectIntegration}'
+
+  JankenHockeyAPIDisconnectIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+      ApiId: !Ref JankenHockeyAPI
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeyDisconnectFunction.Arn}/invocations'
+      PayloadFormatVersion: 1.0
+
+  # sendMessage Route
+  JankenHockeyAPISendMessageRoute:
+    Type: 'AWS::ApiGatewayV2::Route'
+    Properties:
+      ApiId: !Ref JankenHockeyAPI
+      RouteKey: sendMessage
+      Target: !Sub 'integrations/${JankenHockeyAPISendMessageIntegration}'
+
+  JankenHockeyAPISendMessageIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+      ApiId: !Ref JankenHockeyAPI
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeySendMessageFunction.Arn}/invocations'
+      PayloadFormatVersion: 1.0
+
+  # Lambda Permissions
+  JankenHockeyConnectPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt JankenHockeyFunction.Arn
+      FunctionName: !GetAtt JankenHockeyConnectFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
 
-  # API Gateway デプロイメント
+  JankenHockeyDisconnectPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt JankenHockeyDisconnectFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
+
+  JankenHockeySendMessagePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt JankenHockeySendMessageFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
+
+  # API Gateway Deployment
   JankenHockeyAPIDeployment:
     Type: 'AWS::ApiGatewayV2::Deployment'
     Properties:
       ApiId: !Ref JankenHockeyAPI
     DependsOn:
-      - JankenHockeyAPIDefaultRoute
-      - JankenHockeyAPIIntegration
+      - JankenHockeyAPIConnectRoute
+      - JankenHockeyAPIDisconnectRoute
+      - JankenHockeyAPISendMessageRoute
 
   # API Gateway ステージおよびログ出力設定
   JankenHockeyAPIStage:
