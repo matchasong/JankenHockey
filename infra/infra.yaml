@@ -202,13 +202,11 @@ Resources:
                 Resource: arn:aws:logs:*:*:*
               - Effect: Allow
                 Action:
-                  - dynamodb:GetItem
-                  - dynamodb:PutItem
+                  - dynamodb:*
                 Resource: !GetAtt JankenHockeyConnectionTable.Arn
               - Effect: Allow
                 Action:
-                  - dynamodb:GetItem
-                  - dynamodb:PutItem
+                  - dynamodb:*
                 Resource: !GetAtt JankenHockeyGameHistoryTable.Arn
               - Effect: Allow
                 Action:
