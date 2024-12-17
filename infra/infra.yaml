@@ -316,7 +316,7 @@ Resources:
     Properties:
       ApiId: !Ref JankenHockeyAPI
       IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub '${JankenHockeySendMessageFunction.Arn}/invocations'
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeySendMessageFunction.Arn}/invocations'
       PayloadFormatVersion: 1.0
 
   # Lambda Permissions
