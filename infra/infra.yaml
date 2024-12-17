@@ -326,7 +326,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt JankenHockeyConnectFunction.Arn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
 
   JankenHockeyDisconnectPermission:
     Type: AWS::Lambda::Permission
