@@ -15,6 +15,7 @@ def handler(event, context):
     handler
     """
     print(f"START {os.path.basename(__file__)}")
+    print(event)
 
     post_data = json.loads(event.get('body', '{}')).get('data')
     print(post_data)

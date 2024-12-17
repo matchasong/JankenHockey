@@ -15,6 +15,7 @@ def handler(event, context):
     handler
     """
     print(f"START {os.path.basename(__file__)}")
+    print(event)
 
     connection_id = event.get('requestContext', {}).get('connectionId')
     result = connection_table.delete_item(Item={'id': connection_id})
