@@ -257,7 +257,7 @@ Resources:
   JankenHockeyAPI:
     Type: 'AWS::ApiGatewayV2::Api'
     Properties:
-      Name: MyApi
+      Name: JankenHockeyAPI
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: $request.body.action
       ApiKeySelectionExpression: $request.header.x-api-key
@@ -353,6 +353,9 @@ Resources:
       - JankenHockeyAPIConnectRoute
       - JankenHockeyAPIDisconnectRoute
       - JankenHockeyAPISendMessageRoute
+      - JankenHockeyAPIConnectIntegration
+      - JankenHockeyAPIDisconnectIntegration
+      - JankenHockeyAPISendMessageIntegration
 
   # API Gateway ステージおよびログ出力設定
   JankenHockeyAPIStage:
