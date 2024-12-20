@@ -8,6 +8,7 @@ import aioboto3
 import boto3
 
 CONNECTION_TABLE_NAME = "Connection"
+DELAY_TIME = 1.5
 
 # Dynamodbに接続
 dynamodb = boto3.resource("dynamodb")
@@ -79,10 +80,8 @@ def handler(event, context):
         # 例外のスタックトレースを出力する
         traceback.print_exc()
 
-    # 0.3秒程度の遅延を入れる
-    time.sleep(0.3)
-
-    print(f"async_main called time: {time.perf_counter() - start_time}")
+    # 別スレッドの処理が終わる前にLambda環境がクローズしてしまうとまずいので、遅延を入れる
+    time.sleep(DELAY_TIME)
 
     print(f"END {os.path.basename(__file__)} time: {time.perf_counter() - start_time}")
     return {
