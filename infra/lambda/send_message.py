@@ -22,18 +22,7 @@ async def async_send_message(post_data, item):
     """
     async_send_message
     """
-    apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data)
-
-
-async def async_main(items, post_data):
-    """
-    async_main
-    """
-    tasks = []
-    for item in items:
-        tasks.append(async_send_message(post_data, item))
-
-    await asyncio.gather(*tasks)
+    await apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data)
 
 
 def handler(event, context):
@@ -54,7 +43,9 @@ def handler(event, context):
 
     print(f"items:{items} time: {time.perf_counter() - start_time}")
 
-    async_main(items, post_data)
+    tasks = [async_send_message(post_data, item) for item in items]
+    asyncio.run(asyncio.gather(*tasks))
+
     print(f"async_main called time: {time.perf_counter() - start_time}")
 
     print(f"END {os.path.basename(__file__)} time: {time.perf_counter() - start_time}")
