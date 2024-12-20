@@ -40,7 +40,7 @@ async def async_main(tasks):
         asyncio.set_event_loop(loop)
         print("new_event_loop")
 
-    await asyncio.gather(*tasks)
+    await asyncio.gather(*tasks, return_exceptions=True)
 
 
 def handler(event, context):
