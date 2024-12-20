@@ -75,6 +75,9 @@ def handler(event, context):
         # 例外のスタックトレースを出力する
         traceback.print_exc()
 
+    # 0.3秒程度の遅延を入れる
+    time.sleep(0.3)
+
     print(f"async_main called time: {time.perf_counter() - start_time}")
 
     print(f"END {os.path.basename(__file__)} time: {time.perf_counter() - start_time}")
