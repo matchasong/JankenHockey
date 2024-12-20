@@ -27,16 +27,19 @@ async def async_send_message(post_data, item):
     """
     async_send_message
     """
+    print("START async_send_message")
     await aio_client.post_to_connection(
         ConnectionId=item['id'],
         Data=post_data
     )
+    print("END async_send_message")
 
 
 async def async_main(post_data, items):
     """
     async_main
     """
+    print("START async_main")
     tasks = [async_send_message(post_data, item) for item in items]
     try:
         # 現在のイベントループを取得
@@ -49,6 +52,7 @@ async def async_main(post_data, items):
         print("new_event_loop")
 
     await asyncio.gather(*tasks, return_exceptions=True)
+    print("END async_main")
 
 
 def handler(event, context):
