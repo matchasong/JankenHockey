@@ -51,6 +51,15 @@ def handler(event, context):
     print(f"items:{items} time: {time.perf_counter() - start_time}")
 
     tasks = [async_send_message(post_data, item) for item in items]
+
+    try:
+        # 現在のイベントループを取得
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        # イベントループがない場合は新規作成
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
     asyncio.run(async_main(tasks), debug=True)
 
     print(f"async_main called time: {time.perf_counter() - start_time}")
