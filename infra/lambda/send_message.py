@@ -4,6 +4,7 @@ import os
 import time
 import traceback
 
+import aioboto3
 import boto3
 
 CONNECTION_TABLE_NAME = "Connection"
@@ -18,18 +19,25 @@ stage = os.environ.get('STAGE')
 url = F"{api_endpoint}/{stage}".replace('wss', 'https')
 apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
 
+session = aioboto3.Session()
+
 
 async def async_send_message(post_data, item):
     """
     async_send_message
     """
-    await asyncio.to_thread(apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data))
+    async with session.client('apigatewaymanagementapi', endpoint_url=url) as client:
+        await client.post_to_connection(
+            ConnectionId=item['id'],
+            Data=post_data
+        )
 
 
-async def async_main(tasks):
+async def async_main(post_data, items):
     """
     async_main
     """
+    tasks = [async_send_message(post_data, item) for item in items]
     try:
         # 現在のイベントループを取得
         loop = asyncio.get_event_loop()
@@ -53,7 +61,7 @@ def handler(event, context):
     print(f"event: {event}")
 
     post_data = json.loads(event.get('body', '{}')).get('data')
-    print(f"post_data: {post_data} time: {start_time - time.perf_counter()}")
+    print(f"post_data: {post_data} time: {time.perf_counter() - start_time}")
 
     items = connection_table.scan(ProjectionExpression='id').get('Items')
     if items is None:
@@ -61,10 +69,8 @@ def handler(event, context):
 
     print(f"items:{items} time: {time.perf_counter() - start_time}")
 
-    tasks = [async_send_message(post_data, item) for item in items]
-
     try:
-        asyncio.run(async_main(tasks), debug=True)
+        asyncio.run(async_main(post_data, items), debug=True)
     except TypeError:
         # 例外のスタックトレースを出力する
         traceback.print_exc()
