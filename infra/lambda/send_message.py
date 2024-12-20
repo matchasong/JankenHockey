@@ -15,17 +15,19 @@ def handler(event, context):
     handler
     """
     print(f"START {os.path.basename(__file__)}")
-    print(event)
+    print(f"event: {event}")
 
     post_data = json.loads(event.get('body', '{}')).get('data')
-    print(post_data)
-    domain_name = event.get('requestContext', {}).get('domainName')
-    stage = event.get('requestContext', {}).get('stage')
+    print(f"post_data: {post_data}")
 
     items = connection_table.scan(ProjectionExpression='id').get('Items')
     if items is None:
         return {'statusCode': 500, 'body': 'no connection'}
 
+    print(f"items: {items}")
+
+    domain_name = event.get('requestContext', {}).get('domainName')
+    stage = event.get('requestContext', {}).get('stage')
     apigw_management = boto3.client('apigatewaymanagementapi',
                                     endpoint_url=F"https://{domain_name}/{stage}")
     for item in items:
