@@ -43,21 +43,18 @@ def handler(event, context):
 
     print(f"items:{items} time: {time.perf_counter() - start_time}")
 
-    try:
-        tasks = [async_send_message(post_data, item) for item in items]
-        asyncio.run(asyncio.gather(*tasks), debug=True)
+    tasks = [async_send_message(post_data, item) for item in items]
+    asyncio.run(asyncio.gather(*tasks), debug=True)
 
-        print(f"async_main called time: {time.perf_counter() - start_time}")
+    print(f"async_main called time: {time.perf_counter() - start_time}")
 
-        print(f"END {os.path.basename(__file__)} time: {time.perf_counter() - start_time}")
-        return {
-            "statusCode": 200,
-            "body": "send message ok",
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "Content-Type",
-                "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
-            }
+    print(f"END {os.path.basename(__file__)} time: {time.perf_counter() - start_time}")
+    return {
+        "statusCode": 200,
+        "body": "send message ok",
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
         }
-    finally:
-        loop.close()
+    }
