@@ -8,7 +8,7 @@ import aioboto3
 import boto3
 
 CONNECTION_TABLE_NAME = "Connection"
-DELAY_TIME = 1.5
+DELAY_TIME = 60
 
 # Dynamodbに接続
 dynamodb = boto3.resource("dynamodb")
