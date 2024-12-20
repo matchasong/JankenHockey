@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import time
@@ -15,6 +16,24 @@ api_endpoint = os.environ.get('API_ENDPOINT')
 stage = os.environ.get('STAGE')
 url = F"{api_endpoint}/{stage}".replace('wss', 'https')
 apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
+
+
+async def async_send_message(post_data, item):
+    """
+    async_send_message
+    """
+    apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data)
+
+
+async def async_main(items, post_data):
+    """
+    async_main
+    """
+    tasks = []
+    for item in items:
+        tasks.append(async_send_message(post_data, item))
+
+    await asyncio.gather(*tasks)
 
 
 def handler(event, context):
@@ -35,14 +54,8 @@ def handler(event, context):
 
     print(f"items:{items} time: {time.perf_counter() - start_time}")
 
-    for item in items:
-        try:
-            print(item)
-            _ = apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data)
-            print(f"apigw_called time: {time.perf_counter() - start_time}")
-        except Exception as e:
-            print(e)
-            break
+    async_main(items, post_data)
+    print(f"async_main called time: {time.perf_counter() - start_time}")
 
     print(f"END {os.path.basename(__file__)} time: {time.perf_counter() - start_time}")
     return {
