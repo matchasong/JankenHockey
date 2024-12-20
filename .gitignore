@@ -1,3 +1,4 @@
 .env.infra
 sample.html
 .DS_Store
+infra/lambda/package

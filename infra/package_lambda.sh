@@ -17,8 +17,19 @@ TIMESTAMP=$(date "+%Y%m%d%H%M%S")
 LAMBDA_ZIP_FILE=${LAMBDA_ZIP_PREFIX}_${TIMESTAMP}.zip
 
 # デプロイパッケージを作成
+# 依存パッケージのインストール
 cd lambda
-zip -r9 $LAMBDA_ZIP_FILE *
+rm -rf package
+mkdir package
+pip install --target ./package -r requirements.txt
+
+# 依存パッケージをzip化
+cd package
+zip -r ../$LAMBDA_ZIP_FILE .
+
+# Lambda関数のコードをzip化
+cd ..
+zip $LAMBDA_ZIP_FILE *.py
 mv $LAMBDA_ZIP_FILE ../
 cd ../
 
