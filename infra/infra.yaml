@@ -160,6 +160,11 @@ Resources:
       Tags:
         - Key: Project
           Value: JankenHockey
+      Environment:
+        Variables:
+          CONNECTION_TABLE: !Ref JankenHockeyConnectionTable
+          API_ENDPOINT: !GetAtt JankenHockeyAPI.ApiEndpoint
+          STAGE: prod
 
   # Lambda関数
   JankenHockeyDisconnectFunction:
