@@ -25,6 +25,13 @@ async def async_send_message(post_data, item):
     await asyncio.to_thread(apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data))
 
 
+async def async_main(tasks):
+    """
+    async_main
+    """
+    await asyncio.gather(*tasks)
+
+
 def handler(event, context):
     """
     handler
@@ -44,7 +51,7 @@ def handler(event, context):
     print(f"items:{items} time: {time.perf_counter() - start_time}")
 
     tasks = [async_send_message(post_data, item) for item in items]
-    asyncio.run(asyncio.gather(*tasks), debug=True)
+    asyncio.run(async_main(tasks), debug=True)
 
     print(f"async_main called time: {time.perf_counter() - start_time}")
 
