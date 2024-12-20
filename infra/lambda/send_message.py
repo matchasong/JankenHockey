@@ -8,7 +8,7 @@ import aioboto3
 import boto3
 
 CONNECTION_TABLE_NAME = "Connection"
-DELAY_TIME = 60
+DELAY_TIME = 3
 
 # Dynamodbに接続
 dynamodb = boto3.resource("dynamodb")
@@ -29,11 +29,15 @@ async def async_send_message(post_data, item):
     async_send_message
     """
     print("START async_send_message")
-    await aio_client.post_to_connection(
-        ConnectionId=item['id'],
-        Data=post_data
-    )
-    print("END async_send_message")
+    try:
+        await aio_client.post_to_connection(
+            ConnectionId=item['id'],
+            Data=post_data
+        )
+        print("END async_send_message")
+    except Exception:
+        traceback.print_exc()
+        raise
 
 
 async def async_main(post_data, items):
