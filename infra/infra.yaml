@@ -347,37 +347,37 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
 
-  # API Gateway Deployment
-  JankenHockeyAPIDeployment:
-    Type: 'AWS::ApiGatewayV2::Deployment'
-    Properties:
-      ApiId: !Ref JankenHockeyAPI
-    DependsOn:
-      - JankenHockeyAPIConnectRoute
-      - JankenHockeyAPIDisconnectRoute
-      - JankenHockeyAPISendMessageRoute
-      - JankenHockeyAPIConnectIntegration
-      - JankenHockeyAPIDisconnectIntegration
-      - JankenHockeyAPISendMessageIntegration
+  # # API Gateway Deployment
+  # JankenHockeyAPIDeployment:
+  #   Type: 'AWS::ApiGatewayV2::Deployment'
+  #   Properties:
+  #     ApiId: !Ref JankenHockeyAPI
+  #   DependsOn:
+  #     - JankenHockeyAPIConnectRoute
+  #     - JankenHockeyAPIDisconnectRoute
+  #     - JankenHockeyAPISendMessageRoute
+  #     - JankenHockeyAPIConnectIntegration
+  #     - JankenHockeyAPIDisconnectIntegration
+  #     - JankenHockeyAPISendMessageIntegration
 
-  # API Gateway ステージおよびログ出力設定
-  JankenHockeyAPIStage:
-    Type: 'AWS::ApiGatewayV2::Stage'
-    Properties:
-      ApiId: !Ref JankenHockeyAPI
-      DeploymentId: !Ref JankenHockeyAPIDeployment
-      StageName: prod
-      DefaultRouteSettings:
-        DetailedMetricsEnabled: true
-        LoggingLevel: INFO
-        DataTraceEnabled: false
-        ThrottlingBurstLimit: 10
-        ThrottlingRateLimit: 10
-      AccessLogSettings:
-        DestinationArn: !GetAtt MyLogGroup.Arn
-        Format: >-
-          {"requestId":"$context.requestId", "ip": "$context.identity.sourceIp",
-          "caller":"$context.identity.caller",
-          "user":"$context.identity.user","requestTime":"$context.requestTime",
-          "eventType":"$context.eventType","routeKey":"$context.routeKey",
-          "status":"$context.status","connectionId":"$context.connectionId"}
+  # # API Gateway ステージおよびログ出力設定
+  # JankenHockeyAPIStage:
+  #   Type: 'AWS::ApiGatewayV2::Stage'
+  #   Properties:
+  #     ApiId: !Ref JankenHockeyAPI
+  #     DeploymentId: !Ref JankenHockeyAPIDeployment
+  #     StageName: prod
+  #     DefaultRouteSettings:
+  #       DetailedMetricsEnabled: true
+  #       LoggingLevel: INFO
+  #       DataTraceEnabled: false
+  #       ThrottlingBurstLimit: 10
+  #       ThrottlingRateLimit: 10
+  #     AccessLogSettings:
+  #       DestinationArn: !GetAtt MyLogGroup.Arn
+  #       Format: >-
+  #         {"requestId":"$context.requestId", "ip": "$context.identity.sourceIp",
+  #         "caller":"$context.identity.caller",
+  #         "user":"$context.identity.user","requestTime":"$context.requestTime",
+  #         "eventType":"$context.eventType","routeKey":"$context.routeKey",
+  #         "status":"$context.status","connectionId":"$context.connectionId"}
