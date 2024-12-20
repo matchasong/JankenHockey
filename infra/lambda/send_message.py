@@ -29,7 +29,7 @@ async def async_main(tasks):
     """
     async_main
     """
-    await asyncio.gather(*tasks)
+    await asyncio.gather(*tasks, return_exceptions=True)
 
 
 def handler(event, context):
@@ -42,7 +42,7 @@ def handler(event, context):
     print(f"event: {event}")
 
     post_data = json.loads(event.get('body', '{}')).get('data')
-    print(f"post_data: {post_data} time: {start_time - time.perf_counter()}")
+    print(f"post_data: {post_data} time: {time.perf_counter() - start_time}")
 
     items = connection_table.scan(ProjectionExpression='id').get('Items')
     if items is None:
