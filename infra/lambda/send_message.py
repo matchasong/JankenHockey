@@ -22,6 +22,7 @@ def handler(event, context):
     """
     start_time = time.perf_counter()
     print(f"START {os.path.basename(__file__)}")
+    print(f"stage: {stage}, api_endpoint: {api_endpoint}, {api_endpoint}/{stage}")
     print(f"event: {event}")
 
     post_data = json.loads(event.get('body', '{}')).get('data')
@@ -31,20 +32,18 @@ def handler(event, context):
     if items is None:
         return {'statusCode': 500, 'body': 'no connection'}
 
-    print(f"items:{items} time: {start_time - time.perf_counter()}")
+    print(f"items:{items} time: {time.perf_counter() - start_time}")
 
     for item in items:
         try:
             print(item)
             _ = apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data)
-            print(f"apigw_called time: {start_time - time.perf_counter()}")
+            print(f"apigw_called time: {time.perf_counter() - start_time}")
         except Exception as e:
             print(e)
             break
 
-    end_time = time.perf_counter()
-    print(f"END {os.path.basename(__file__)} {end_time - start_time}")
-
+    print(f"END {os.path.basename(__file__)} time: {time.perf_counter() - start_time}")
     return {
         "statusCode": 200,
         "body": "send message ok",
