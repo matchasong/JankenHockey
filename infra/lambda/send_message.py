@@ -13,7 +13,8 @@ connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
 # API Gateway Management APIに接続
 api_endpoint = os.environ.get('API_ENDPOINT')
 stage = os.environ.get('STAGE')
-apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{api_endpoint}/{stage}")
+url = F"{api_endpoint}/{stage}".replace('wss', 'https')
+apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
 
 
 def handler(event, context):
@@ -22,7 +23,7 @@ def handler(event, context):
     """
     start_time = time.perf_counter()
     print(f"START {os.path.basename(__file__)}")
-    print(f"stage: {stage}, api_endpoint: {api_endpoint}, {api_endpoint}/{stage}")
+    print(f"stage: {stage}, api_endpoint: {api_endpoint}, {url}")
     print(f"event: {event}")
 
     post_data = json.loads(event.get('body', '{}')).get('data')
