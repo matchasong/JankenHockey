@@ -29,6 +29,14 @@ async def async_main(tasks):
     """
     async_main
     """
+    try:
+        # 現在のイベントループを取得
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        # イベントループがない場合は新規作成
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
     await asyncio.gather(*tasks)
 
 
