@@ -22,7 +22,7 @@ async def async_send_message(post_data, item):
     """
     async_send_message
     """
-    await apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data)
+    await asyncio.to_thread(apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data))
 
 
 def handler(event, context):
@@ -64,4 +64,3 @@ def handler(event, context):
         }
     finally:
         loop.close()
-    
