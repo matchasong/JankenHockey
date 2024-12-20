@@ -43,12 +43,9 @@ def handler(event, context):
 
     print(f"items:{items} time: {time.perf_counter() - start_time}")
 
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
     try:
         tasks = [async_send_message(post_data, item) for item in items]
-        loop.run_until_complete(asyncio.gather(*tasks))
+        asyncio.run(asyncio.gather(*tasks), debug=True)
 
         print(f"async_main called time: {time.perf_counter() - start_time}")
 
