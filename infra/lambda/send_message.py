@@ -20,17 +20,17 @@ url = F"{api_endpoint}/{stage}".replace('wss', 'https')
 apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
 
 session = aioboto3.Session()
+aio_client = session.client('apigatewaymanagementapi', endpoint_url=url)
 
 
 async def async_send_message(post_data, item):
     """
     async_send_message
     """
-    async with session.client('apigatewaymanagementapi', endpoint_url=url) as client:
-        await client.post_to_connection(
-            ConnectionId=item['id'],
-            Data=post_data
-        )
+    await aio_client.post_to_connection(
+        ConnectionId=item['id'],
+        Data=post_data
+    )
 
 
 async def async_main(post_data, items):
