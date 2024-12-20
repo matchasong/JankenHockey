@@ -22,7 +22,7 @@ cd lambda
 rm -rf package
 mkdir package
 
-line = $(cat requirements.txt | wc -l)
+line=$(cat requirements.txt | wc -l)
 if [ $line -eq 0 ]; then
     echo 'No dependencies'
 else
