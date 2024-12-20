@@ -21,7 +21,13 @@ LAMBDA_ZIP_FILE=${LAMBDA_ZIP_PREFIX}_${TIMESTAMP}.zip
 cd lambda
 rm -rf package
 mkdir package
-pip install --target ./package -r requirements.txt
+
+line = $(cat requirements.txt | wc -l)
+if [ $line -eq 0 ]; then
+    echo 'No dependencies'
+else
+   pip install --target ./package -r requirements.txt
+fi
 
 # 依存パッケージをzip化
 cd package

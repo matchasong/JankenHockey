@@ -2,13 +2,10 @@ import asyncio
 import json
 import os
 import time
-import traceback
 
-import aioboto3
 import boto3
 
 CONNECTION_TABLE_NAME = "Connection"
-DELAY_TIME = 3
 
 # Dynamodbに接続
 dynamodb = boto3.resource("dynamodb")
@@ -20,44 +17,19 @@ stage = os.environ.get('STAGE')
 url = F"{api_endpoint}/{stage}".replace('wss', 'https')
 apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
 
-session = aioboto3.Session()
-aio_client = session.client('apigatewaymanagementapi', endpoint_url=url)
-
 
 async def async_send_message(post_data, item):
     """
     async_send_message
     """
-    print("START async_send_message")
-    try:
-        await aio_client.post_to_connection(
-            ConnectionId=item['id'],
-            Data=post_data
-        )
-        print("END async_send_message")
-    except Exception:
-        traceback.print_exc()
-        raise
+    await asyncio.to_thread(apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data))
 
 
-async def async_main(post_data, items):
+async def async_main(tasks):
     """
     async_main
     """
-    print("START async_main")
-    tasks = [async_send_message(post_data, item) for item in items]
-    try:
-        # 現在のイベントループを取得
-        loop = asyncio.get_event_loop()
-        print("get_event_loop")
-    except RuntimeError:
-        # イベントループがない場合は新規作成
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        print("new_event_loop")
-
-    await asyncio.gather(*tasks, return_exceptions=True)
-    print("END async_main")
+    await asyncio.gather(*tasks)
 
 
 def handler(event, context):
@@ -70,7 +42,7 @@ def handler(event, context):
     print(f"event: {event}")
 
     post_data = json.loads(event.get('body', '{}')).get('data')
-    print(f"post_data: {post_data} time: {time.perf_counter() - start_time}")
+    print(f"post_data: {post_data} time: {start_time - time.perf_counter()}")
 
     items = connection_table.scan(ProjectionExpression='id').get('Items')
     if items is None:
@@ -78,14 +50,10 @@ def handler(event, context):
 
     print(f"items:{items} time: {time.perf_counter() - start_time}")
 
-    try:
-        asyncio.run(async_main(post_data, items), debug=True)
-    except TypeError:
-        # 例外のスタックトレースを出力する
-        traceback.print_exc()
+    tasks = [async_send_message(post_data, item) for item in items]
+    asyncio.run(async_main(tasks), debug=True)
 
-    # 別スレッドの処理が終わる前にLambda環境がクローズしてしまうとまずいので、遅延を入れる
-    time.sleep(DELAY_TIME)
+    print(f"async_main called time: {time.perf_counter() - start_time}")
 
     print(f"END {os.path.basename(__file__)} time: {time.perf_counter() - start_time}")
     return {
