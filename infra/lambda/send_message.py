@@ -59,7 +59,7 @@ def handler(event, context):
         # イベントループがない場合は新規作成
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-  
+
     asyncio.run(async_main(tasks), debug=True)
 
     print(f"async_main called time: {time.perf_counter() - start_time}")
