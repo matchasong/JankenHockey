@@ -24,11 +24,12 @@ if [ -z $LAMBDA_ZIP_FILE ]; then
 fi
 
 # CloudFormationをデプロイ
+set +x
 aws cloudformation deploy \
 --template-file $TEMPLATE_FILE \
 --stack-name $STACK_NAME \
 --capabilities CAPABILITY_NAMED_IAM \
---parameter-overrides LambdaBucket=$LAMBDA_BUCKET LambdaZipFile=$LAMBDA_ZIP_FILE
+--parameter-overrides LambdaBucket=$LAMBDA_BUCKET LambdaZipFile=$LAMBDA_ZIP_FILE AwsAccessKey=$AWS_ACCESS_KEY_ID AwsSecretKey=$AWS_SECRET_ACCESS_KEY
 
 echo 'Deploy complete'
 
