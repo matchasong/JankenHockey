@@ -53,7 +53,7 @@ async def process_async_http_request(connection_id, data):
         async with session.post(endpoint_url, json=data) as response:
             print(f"response: {response.status}")
             print(f"response: {await response.text()}")
-    
+
     print(f"process_async_http_request time: {time.perf_counter() - start_async}")
 
 
@@ -69,7 +69,7 @@ async def async_main(tasks):
     """
     async_main
     """
-    await asyncio.gather(*tasks, return_exceptions=True)
+    await asyncio.gather(*tasks)
 
 
 def handler(event, context):
