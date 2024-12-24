@@ -4,7 +4,6 @@ import os
 import time
 
 import aiohttp
-from aws_request_signer import AwsRequestSigner
 import boto3
 
 CONNECTION_TABLE_NAME = "Connection"
@@ -16,46 +15,39 @@ connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
 # API Gateway Management APIに接続
 api_endpoint = os.environ.get('API_ENDPOINT')
 stage = os.environ.get('STAGE')
-aws_access_key = os.environ.get('AWS_ACCESS_KEY')
-aws_secret_key = os.environ.get('AWS_SECRET_KEY')
 region = os.environ.get('AWS_REGION')
 
-url = F"{api_endpoint}/{stage}".replace('wss', 'https')
-apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
+# AWSの認証情報を取得
+session = boto3.Session()
+credentials = session.get_credentials()
+aws_access_key = credentials.access_key
+aws_secret_access_key = credentials.secret_key
+url_base = F"{api_endpoint}/{stage}".replace('wss://', '')
+print(f"url_base: {url_base}")
 
-# リクエスト署名の準備
-signer = AwsRequestSigner(
-    aws_access_key=aws_access_key,
-    aws_secret_key=aws_secret_key,
-    region=region,
-    service='execute-api'
-)
+# API Gateway Management APIのエンドポイントを生成
+# url = F"{api_endpoint}/{stage}".replace('wss', 'https')
+# apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
 
 
-async def process_async_http_request(url, connection_id, data):
+async def process_async_http_request(connection_id, data):
     """
     process_async_http_request
     非同期でHTTPリクエストを送信
     """
+    endpoint_url = f"{url_base}/@connections/{connection_id}"
 
-    endpoint_url = f"{url}/@connections/{connection_id}"
-    # POSTリクエストのパラメータを準備
-    method = 'POST'
-    headers = {
-        'Content-Type': 'application/json',
-    }
-    body = json.dumps(data)
-
-    # SigV4署名を生成して headers に追加
-    signed_headers = signer.sign_request(
-        method=method,
-        url=endpoint_url,
-        headers=headers,
-        body=body
+    # リクエスト署名の準備
+    auth = aiohttp.aws_auth.AWSRequestsAuth(
+        aws_access_key=credentials.access_key,
+        aws_secret_access_key=credentials.secret_key,
+        aws_host=url_base,
+        aws_region=region,
+        aws_service='execute-api'
     )
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(endpoint_url, headers=signed_headers, json=data) as response:
+    async with aiohttp.ClientSession(auth=auth) as session:
+        async with session.post(endpoint_url, json=data) as response:
             print(f"response: {response.status}")
             print(f"response: {await response.text()}")
 
@@ -64,7 +56,7 @@ async def async_send_message(post_data, item):
     """
     async_send_message
     """
-    await process_async_http_request(url, item['id'], post_data)
+    await process_async_http_request(item['id'], post_data)
     # await asyncio.to_thread(apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data))
 
 
@@ -81,7 +73,7 @@ def handler(event, context):
     """
     start_time = time.perf_counter()
     print(f"START {os.path.basename(__file__)}")
-    print(f"stage: {stage}, api_endpoint: {api_endpoint}, {url}")
+    print(f"stage: {stage}, api_endpoint: {api_endpoint}")
     print(f"event: {event}")
 
     post_data = json.loads(event.get('body', '{}')).get('data')
