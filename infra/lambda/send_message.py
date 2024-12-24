@@ -4,6 +4,7 @@ import os
 import time
 
 import aiohttp
+from aws_request_signer import AwsRequestSigner
 import boto3
 
 CONNECTION_TABLE_NAME = "Connection"
@@ -15,14 +16,46 @@ connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
 # API Gateway Management APIに接続
 api_endpoint = os.environ.get('API_ENDPOINT')
 stage = os.environ.get('STAGE')
+aws_access_key = os.environ.get('AWS_ACCESS_KEY')
+aws_secret_key = os.environ.get('AWS_SECRET_KEY')
+region = os.environ.get('AWS_REGION')
+
 url = F"{api_endpoint}/{stage}".replace('wss', 'https')
 apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
 
+# リクエスト署名の準備
+signer = AwsRequestSigner(
+    aws_access_key=aws_access_key,
+    aws_secret_key=aws_secret_key,
+    region=region,
+    service='execute-api'
+)
 
-async def process_http_request(url, connection_id, data):
+
+async def process_async_http_request(url, connection_id, data):
+    """
+    process_async_http_request
+    非同期でHTTPリクエストを送信
+    """
+
     endpoint_url = f"{url}/@connections/{connection_id}"
+    # POSTリクエストのパラメータを準備
+    method = 'POST'
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    body = json.dumps(data)
+
+    # SigV4署名を生成して headers に追加
+    signed_headers = signer.sign_request(
+        method=method,
+        url=endpoint_url,
+        headers=headers,
+        body=body
+    )
+
     async with aiohttp.ClientSession() as session:
-        async with session.post(endpoint_url, json=data) as response:
+        async with session.post(endpoint_url, headers=signed_headers, json=data) as response:
             print(f"response: {response.status}")
             print(f"response: {await response.text()}")
 
@@ -31,7 +64,7 @@ async def async_send_message(post_data, item):
     """
     async_send_message
     """
-    await process_http_request(url, item['id'], post_data)
+    await process_async_http_request(url, item['id'], post_data)
     # await asyncio.to_thread(apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data))
 
 
