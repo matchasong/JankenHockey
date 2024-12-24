@@ -8,12 +8,6 @@ Parameters:
   LambdaZipFile:
     Type: String
     Description: Lambda function Zip Package file name.
-  AwsAccessKey:
-    Type: String
-    Description: AwsAccessKey
-  AwsSecretKey:
-    Type: String
-    Description: AwsSecretKey
 
 Resources:
   ############################
@@ -171,7 +165,6 @@ Resources:
           CONNECTION_TABLE: !Ref JankenHockeyConnectionTable
           API_ENDPOINT: !GetAtt JankenHockeyAPI.ApiEndpoint
           STAGE: prod
-          AWS_REGION: !Ref AWS::Region
 
   # Lambda関数
   JankenHockeyDisconnectFunction:
