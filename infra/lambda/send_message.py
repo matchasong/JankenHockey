@@ -35,7 +35,10 @@ async def process_async_http_request(connection_id, data):
     process_async_http_request
     非同期でHTTPリクエストを送信
     """
+    start_async = time.perf_counter()
+    print(f"connection_id: {connection_id}, data: {data}")
     endpoint_url = f"{url_base}/@connections/{connection_id}"
+    print(f"endpoint_url: {endpoint_url}")
 
     # リクエスト署名の準備
     auth = aiohttp.aws_auth.AWSRequestsAuth(
@@ -50,6 +53,8 @@ async def process_async_http_request(connection_id, data):
         async with session.post(endpoint_url, json=data) as response:
             print(f"response: {response.status}")
             print(f"response: {await response.text()}")
+    
+    print(f"process_async_http_request time: {time.perf_counter() - start_async}")
 
 
 async def async_send_message(post_data, item):
