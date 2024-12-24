@@ -21,23 +21,24 @@ LAMBDA_ZIP_FILE=${LAMBDA_ZIP_PREFIX}_${TIMESTAMP}.zip
 cd lambda
 rm -rf package
 mkdir package
-cd package
 
 line=$(cat requirements.txt | wc -l)
 if [ $line -eq 0 ]; then
     echo 'No dependencies'
 else
-   pip install --target . -r requirements.txt
+   pip install --target ./package -r requirements.txt
 
    # 依存パッケージをzip化
+   cd package
    zip -r ../$LAMBDA_ZIP_FILE .
+   cd ..
 fi
 
 # Lambda関数のコードをzip化
-cd ..
 zip $LAMBDA_ZIP_FILE *.py
 mv $LAMBDA_ZIP_FILE ../
 cd ../
+
 
 # S3にアップロード
 aws s3 cp $LAMBDA_ZIP_FILE s3://$LAMBDA_BUCKET/$LAMBDA_ZIP_FILE
