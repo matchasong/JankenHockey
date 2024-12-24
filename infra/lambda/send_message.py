@@ -3,6 +3,7 @@ import json
 import os
 import time
 
+import aiohttp
 import boto3
 
 CONNECTION_TABLE_NAME = "Connection"
@@ -18,11 +19,20 @@ url = F"{api_endpoint}/{stage}".replace('wss', 'https')
 apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
 
 
+async def process_http_request(url, connection_id, data):
+    endpoint_url = f"{url}/@connections/{connection_id}"
+    async with aiohttp.ClientSession() as session:
+        async with session.post(endpoint_url, json=data) as response:
+            print(f"response: {response.status}")
+            print(f"response: {await response.text()}")
+
+
 async def async_send_message(post_data, item):
     """
     async_send_message
     """
-    await asyncio.to_thread(apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data))
+    await process_http_request(url, item['id'], post_data)
+    # await asyncio.to_thread(apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data))
 
 
 async def async_main(tasks):
