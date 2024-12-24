@@ -1,2 +1,3 @@
 aiohttp
 aws-request-signer
+aws_requests_auth
