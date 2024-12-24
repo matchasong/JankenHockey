@@ -3,6 +3,7 @@ import json
 import os
 import time
 
+from aws_requests_auth.aws_auth import AWSRequestsAuth
 import aiohttp
 import boto3
 
@@ -41,7 +42,7 @@ async def process_async_http_request(connection_id, data):
     print(f"endpoint_url: {endpoint_url}")
 
     # リクエスト署名の準備
-    auth = aiohttp.aws_auth.AWSRequestsAuth(
+    auth = AWSRequestsAuth(
         aws_access_key=credentials.access_key,
         aws_secret_access_key=credentials.secret_key,
         aws_host=url_base,
