@@ -7,6 +7,7 @@ import aiohttp
 import boto3
 
 CONNECTION_TABLE_NAME = "Connection"
+REGION = "ap-northeast-1"
 
 # Dynamodbに接続
 dynamodb = boto3.resource("dynamodb")
@@ -15,7 +16,6 @@ connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
 # API Gateway Management APIに接続
 api_endpoint = os.environ.get('API_ENDPOINT')
 stage = os.environ.get('STAGE')
-region = os.environ.get('AWS_REGION')
 
 # AWSの認証情報を取得
 session = boto3.Session()
@@ -42,7 +42,7 @@ async def process_async_http_request(connection_id, data):
         aws_access_key=credentials.access_key,
         aws_secret_access_key=credentials.secret_key,
         aws_host=url_base,
-        aws_region=region,
+        aws_region=REGION,
         aws_service='execute-api'
     )
 
