@@ -171,8 +171,6 @@ Resources:
           CONNECTION_TABLE: !Ref JankenHockeyConnectionTable
           API_ENDPOINT: !GetAtt JankenHockeyAPI.ApiEndpoint
           STAGE: prod
-          AWS_ACCESS_KEY: !Ref AwsAccessKey
-          AWS_SECRET_KEY: !Ref AwsSecretKey
           AWS_REGION: !Ref AWS::Region
 
   # Lambda関数
