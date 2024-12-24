@@ -23,8 +23,8 @@ session = boto3.Session()
 credentials = session.get_credentials()
 aws_access_key = credentials.access_key
 aws_secret_access_key = credentials.secret_key
-url_base = F"{api_endpoint}/{stage}".replace('wss://', '')
-print(f"url_base: {url_base}")
+endpoint_host = api_endpoint.replace('wss://', '')
+print(f"url_base: {endpoint_host}")
 
 # API Gateway Management APIのエンドポイントを生成
 # url = F"{api_endpoint}/{stage}".replace('wss', 'https')
@@ -38,20 +38,21 @@ async def process_async_http_request(connection_id, data):
     """
     start_async = time.perf_counter()
     print(f"connection_id: {connection_id}, data: {data}")
-    endpoint_url = f"{url_base}/@connections/{connection_id}"
-    print(f"endpoint_url: {endpoint_url}")
 
     # リクエスト署名の準備
     auth = AWSRequestsAuth(
         aws_access_key=credentials.access_key,
         aws_secret_access_key=credentials.secret_key,
-        aws_host=url_base,
+        aws_host=endpoint_host,
         aws_region=REGION,
         aws_service='execute-api'
     )
 
+    post_url = f"https://{endpoint_host}/@connections/{connection_id}"
+    print(f"post_url: {post_url}")
+
     async with aiohttp.ClientSession(auth=auth) as session:
-        async with session.post(endpoint_url, json=data) as response:
+        async with session.post(post_url, json=data) as response:
             print(f"response: {response.status}")
             print(f"response: {await response.text()}")
 
