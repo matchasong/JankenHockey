@@ -40,6 +40,9 @@ print(f"endpoint_host: {endpoint_host}")
 boto3_session = boto3.Session()
 credentials: Credentials = boto3_session.get_credentials()
 
+# SigV4の署名を作成
+auth = SigV4Auth(credentials, "execute-api", f"{REGION}")
+
 
 async def process_async_http_request(connection_id, data):
     """
@@ -63,14 +66,7 @@ async def process_async_http_request(connection_id, data):
     )
 
     # SigV4で署名
-    auth = SigV4Auth(credentials, "execute-api", f"{REGION}")
-    print(f"credentials: {auth.credentials}")
-    print(f"auth: {auth}")
-    print(f"aws_request: {aws_request}")
-    print(f"aws_request.headers: {aws_request.headers}")
     auth.add_auth(aws_request)
-    print(f"aws_request.headers {aws_request.headers}")
-    print(f"aws_request.headers {dict(aws_request.headers)}")
 
     async with aiohttp.ClientSession() as session:
         async with session.post(
@@ -80,11 +76,6 @@ async def process_async_http_request(connection_id, data):
         ) as response:
             print(f"response: {response.status}")
             print(f"Headers: {response.headers}")
-            print(f"response: {await response.text()}")
-
-            print(f"Request Headers: {response.request_info.headers}")
-            print(f"Request Method: {response.request_info.method}")
-            print(f"Request URL: {response.request_info.url}")
 
     print(f"process_async_http_request time: {time.perf_counter() - start_async}")
 
