@@ -65,14 +65,16 @@ async def process_async_http_request(connection_id, data):
     )
 
     # SigV4で署名
-    auth = SigV4Auth(credentials, "execute-api", f"{REGION}")
-    auth.add_auth(aws_request)
-
-    # 署名済みヘッダーの取得
-    signed_headers = aws_request.headers
+    SigV4Auth(credentials, "execute-api", f"{REGION}").add_auth(aws_request)
+    print(f"aws_request.headers {aws_request.headers}")
+    print(f"aws_request.headers {dict(aws_request.headers)}")
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=data, headers=signed_headers) as response:
+        async with session.post(
+            url,
+            headers=dict(aws_request.headers),
+            data=data
+        ) as response:
             print(f"response: {response.status}")
             print(f"Headers: {response.headers}")
             print(f"response: {await response.text()}")
