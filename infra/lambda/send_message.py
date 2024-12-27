@@ -61,11 +61,14 @@ async def process_async_http_request(connection_id, data):
     aws_request = AWSRequest(
         method=METHOD_POST,
         url=url,
-        data=data
+        data=data,
+        headers={
+            'Content-Type': 'application/json'
+        }
     )
 
     # SigV4で署名
-    print(f"aws_request: {aws_request.headers}")
+    print(f"aws_request.headers: {aws_request.headers}")
     SigV4Auth(credentials, "execute-api", f"{REGION}").add_auth(aws_request)
     print(f"aws_request.headers {aws_request.headers}")
     print(f"aws_request.headers {dict(aws_request.headers)}")
