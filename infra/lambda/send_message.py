@@ -1,5 +1,4 @@
 import asyncio
-from collections import defaultdict
 import json
 import os
 import time
@@ -8,7 +7,9 @@ import aiohttp
 import boto3
 from botocore.auth import SigV4Auth
 from botocore.awsrequest import AWSRequest
+from botocore.credentials import Credentials
 
+# 定数
 CONNECTION_TABLE_NAME = "Connection"
 REGION = "ap-northeast-1"
 METHOD_POST = "POST"
@@ -31,11 +32,13 @@ connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
 api_endpoint = os.environ.get('API_ENDPOINT')
 stage = os.environ.get('STAGE')
 
-# AWSの認証情報を取得
-boto3_session = boto3.Session()
-credentials = boto3_session.get_credentials()
+# API Gatewayのエンドポイントを取得
 endpoint_host = api_endpoint.replace('wss://', '')
 print(f"endpoint_host: {endpoint_host}")
+
+# AWSの認証情報を取得
+boto3_session = boto3.Session()
+credentials: Credentials = boto3_session.get_credentials()
 
 
 async def process_async_http_request(connection_id, data):
@@ -48,16 +51,6 @@ async def process_async_http_request(connection_id, data):
 
     url = f"https://{endpoint_host}/{stage}/@connections/{connection_id}"
     print(f"post_url: {url}")
-
-    credentials = {
-        'access_key': aws_access_key,
-        'secret_key': aws_secret_key,
-        'session_token': aws_session_token,
-        'region': aws_region,
-        'account_id': identity['Account'],
-        'arn': identity['Arn'],
-        'token': ''
-    }
 
     # AWSリクエストの作成
     aws_request = AWSRequest(
