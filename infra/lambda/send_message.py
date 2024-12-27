@@ -71,6 +71,7 @@ async def process_async_http_request(connection_id, data):
 
     # SigV4で署名
     auth = SigV4Auth(credentials, "execute-api", "{region}")
+    print(f"credentials: {auth.credentials}")
     print(f"auth: {auth}")
     print(f"aws_request: {aws_request}")
     print(f"aws_request.headers: {aws_request.headers}")
