@@ -12,6 +12,16 @@ CONNECTION_TABLE_NAME = "Connection"
 REGION = "ap-northeast-1"
 METHOD_POST = "POST"
 
+# 環境変数からcredentialsを取得
+aws_access_key = os.environ.get('AWS_ACCESS_KEY_ID')
+aws_secret_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+aws_session_token = os.environ.get('AWS_SESSION_TOKEN')
+aws_region = os.environ.get('AWS_REGION')
+
+# 実行ロールの情報を取得
+sts_client = boto3.client('sts')
+identity = sts_client.get_caller_identity()
+
 # Dynamodbに接続
 dynamodb = boto3.resource("dynamodb")
 connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
@@ -37,6 +47,15 @@ async def process_async_http_request(connection_id, data):
 
     url = f"https://{endpoint_host}/{stage}/@connections/{connection_id}"
     print(f"post_url: {url}")
+    
+    credentials = {
+        'access_key': aws_access_key,
+        'secret_key': aws_secret_key,
+        'session_token': aws_session_token,
+        'region': aws_region,
+        'account_id': identity['Account'],
+        'arn': identity['Arn']
+    }
 
     # AWSリクエストの作成
     aws_request = AWSRequest(
