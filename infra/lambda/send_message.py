@@ -39,21 +39,10 @@ async def process_async_http_request(connection_id, data):
     start_async = time.perf_counter()
     print(f"connection_id: {connection_id}, data: {data}")
 
-    # リクエスト署名の準備
-    # auth = AWSRequestsAuth(
-    #     aws_access_key=credentials.access_key,
-    #     aws_secret_access_key=credentials.secret_key,
-    #     aws_host=endpoint_host,
-    #     aws_region=REGION,
-    #     aws_service='execute-api'
-    # )
-
-    auth = aiohttp.helpers.BasicAuth(login=None, password=None)
-
     post_url = f"https://{endpoint_host}/@connections/{connection_id}"
     print(f"post_url: {post_url}")
 
-    async with aiohttp.ClientSession(auth=auth) as session:
+    async with aiohttp.ClientSession() as session:
         async with session.post(post_url, json=data) as response:
             print(f"response: {response.status}")
             print(f"Headers: {response.headers}")
