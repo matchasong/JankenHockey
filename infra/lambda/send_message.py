@@ -43,23 +43,6 @@ credentials: Credentials = boto3_session.get_credentials()
 # SigV4の署名を作成
 auth = SigV4Auth(credentials, "execute-api", f"{REGION}")
 
-# aiohttp.ClientSessionの初期化
-session = None
-
-
-async def get_session() -> aiohttp.ClientSession:
-    """get_session
-    aiohttp.ClientSessionオブジェクトを返す
-    すでに作成済みの場合は再作成しない
-
-    Returns:
-        aiohttp.ClientSession: aiohttp.ClientSessionオブジェクト
-    """
-    global session
-    if session is None:
-        session = aiohttp.ClientSession()
-    return session
-
 
 async def process_async_http_request(connection_id, data):
     """
@@ -85,15 +68,14 @@ async def process_async_http_request(connection_id, data):
     # SigV4で署名
     auth.add_auth(aws_request)
 
-    # async with aiohttp.ClientSession() as session:
-    session = await get_session()
-    async with session.post(
-        url,
-        headers=dict(aws_request.headers),
-        data=data
-    ) as response:
-        print(f"response: {response.status}")
-        print(f"Headers: {response.headers}")
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            url,
+            headers=dict(aws_request.headers),
+            data=data
+        ) as response:
+            print(f"response: {response.status}")
+            print(f"Headers: {response.headers}")
 
     print(f"process_async_http_request time: {time.perf_counter() - start_async}")
 
