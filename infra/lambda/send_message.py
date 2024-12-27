@@ -46,7 +46,7 @@ async def process_async_http_request(connection_id, data):
     )
 
     # SigV4で署名
-    auth = SigV4Auth(credentials, "execute-api", "{REGION}")
+    auth = SigV4Auth(credentials, "execute-api", f"{REGION}")
     auth.add_auth(aws_request)
 
     # 署名済みヘッダーの取得
