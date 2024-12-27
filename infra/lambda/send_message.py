@@ -91,10 +91,8 @@ async def async_send_message(post_data, item):
 async def async_main(tasks):
     """
     async_main
-    タスクを全件非同期で実行し、結果は待たない。
     """
-    for task in tasks:
-        asyncio.create_task(task)
+    await asyncio.gather(*tasks)
 
 
 def handler(event, context):
