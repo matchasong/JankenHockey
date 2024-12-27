@@ -3,12 +3,14 @@ import json
 import os
 import time
 
-# from aws_requests_auth.aws_auth import AWSRequestsAuth
 import aiohttp
 import boto3
+from botocore.auth import SigV4Auth
+from botocore.awsrequest import AWSRequest
 
 CONNECTION_TABLE_NAME = "Connection"
 REGION = "ap-northeast-1"
+METHOD_POST = "POST"
 
 # Dynamodbに接続
 dynamodb = boto3.resource("dynamodb")
@@ -39,15 +41,29 @@ async def process_async_http_request(connection_id, data):
     start_async = time.perf_counter()
     print(f"connection_id: {connection_id}, data: {data}")
 
-    post_url = f"https://{endpoint_host}/@connections/{connection_id}"
-    print(f"post_url: {post_url}")
+    url = f"https://{endpoint_host}/{stage}/@connections/{connection_id}"
+    print(f"post_url: {url}")
+
+    # AWSリクエストの作成
+    aws_request = AWSRequest(
+        method=METHOD_POST,
+        url=url,
+        data=data
+    )
+
+    # SigV4で署名
+    auth = SigV4Auth(credentials, "execute-api", "{REGION}")
+    auth.add_auth(aws_request)
+
+    # 署名済みヘッダーの取得
+    signed_headers = aws_request.headers
 
     async with aiohttp.ClientSession() as session:
-        async with session.post(post_url, json=data) as response:
+        async with session.post(url, json=data, headers=signed_headers) as response:
             print(f"response: {response.status}")
             print(f"Headers: {response.headers}")
             print(f"response: {await response.text()}")
-            
+
             print(f"Request Headers: {response.request_info.headers}")
             print(f"Request Method: {response.request_info.method}")
             print(f"Request URL: {response.request_info.url}")
