@@ -48,7 +48,7 @@ async def process_async_http_request(connection_id, data):
     #     aws_service='execute-api'
     # )
 
-    auth = aiohttp.helpers.BasicAuth("", "")
+    auth = aiohttp.helpers.BasicAuth(login=None, password=None)
 
     post_url = f"https://{endpoint_host}/@connections/{connection_id}"
     print(f"post_url: {post_url}")
@@ -56,7 +56,12 @@ async def process_async_http_request(connection_id, data):
     async with aiohttp.ClientSession(auth=auth) as session:
         async with session.post(post_url, json=data) as response:
             print(f"response: {response.status}")
+            print(f"Headers: {response.headers}")
             print(f"response: {await response.text()}")
+            
+            print(f"Request Headers: {response.request_info.headers}")
+            print(f"Request Method: {response.request_info.method}")
+            print(f"Request URL: {response.request_info.url}")
 
     print(f"process_async_http_request time: {time.perf_counter() - start_async}")
 
