@@ -63,7 +63,8 @@ async def process_async_http_request(connection_id, data):
         url=url,
         data=data,
         headers={
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'token': ''
         }
     )
 
