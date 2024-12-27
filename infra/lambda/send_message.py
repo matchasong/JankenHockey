@@ -3,7 +3,7 @@ import json
 import os
 import time
 
-from aws_requests_auth.aws_auth import AWSRequestsAuth
+# from aws_requests_auth.aws_auth import AWSRequestsAuth
 import aiohttp
 import boto3
 
@@ -19,8 +19,8 @@ api_endpoint = os.environ.get('API_ENDPOINT')
 stage = os.environ.get('STAGE')
 
 # AWSの認証情報を取得
-session = boto3.Session()
-credentials = session.get_credentials()
+boto3_session = boto3.Session()
+credentials = boto3_session.get_credentials()
 aws_access_key = credentials.access_key
 aws_secret_access_key = credentials.secret_key
 endpoint_host = api_endpoint.replace('wss://', '')
@@ -40,13 +40,15 @@ async def process_async_http_request(connection_id, data):
     print(f"connection_id: {connection_id}, data: {data}")
 
     # リクエスト署名の準備
-    auth = AWSRequestsAuth(
-        aws_access_key=credentials.access_key,
-        aws_secret_access_key=credentials.secret_key,
-        aws_host=endpoint_host,
-        aws_region=REGION,
-        aws_service='execute-api'
-    )
+    # auth = AWSRequestsAuth(
+    #     aws_access_key=credentials.access_key,
+    #     aws_secret_access_key=credentials.secret_key,
+    #     aws_host=endpoint_host,
+    #     aws_region=REGION,
+    #     aws_service='execute-api'
+    # )
+
+    auth = aiohttp.helpers.BasicAuth("", "")
 
     post_url = f"https://{endpoint_host}/@connections/{connection_id}"
     print(f"post_url: {post_url}")
