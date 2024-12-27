@@ -1,4 +1,5 @@
 import asyncio
+from collections import defaultdict
 import json
 import os
 import time
@@ -57,6 +58,7 @@ async def process_async_http_request(connection_id, data):
         'arn': identity['Arn'],
         'token': ''
     }
+    credentials = defaultdict(str, credentials)
 
     # AWSリクエストの作成
     aws_request = AWSRequest(
