@@ -23,14 +23,8 @@ stage = os.environ.get('STAGE')
 # AWSの認証情報を取得
 boto3_session = boto3.Session()
 credentials = boto3_session.get_credentials()
-aws_access_key = credentials.access_key
-aws_secret_access_key = credentials.secret_key
 endpoint_host = api_endpoint.replace('wss://', '')
-print(f"url_base: {endpoint_host}")
-
-# API Gateway Management APIのエンドポイントを生成
-# url = F"{api_endpoint}/{stage}".replace('wss', 'https')
-# apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
+print(f"endpoint_host: {endpoint_host}")
 
 
 async def process_async_http_request(connection_id, data):
