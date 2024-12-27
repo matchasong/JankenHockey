@@ -48,7 +48,7 @@ async def process_async_http_request(connection_id, data):
 
     url = f"https://{endpoint_host}/{stage}/@connections/{connection_id}"
     print(f"post_url: {url}")
-    
+
     credentials = {
         'access_key': aws_access_key,
         'secret_key': aws_secret_key,
@@ -58,7 +58,6 @@ async def process_async_http_request(connection_id, data):
         'arn': identity['Arn'],
         'token': ''
     }
-    credentials = defaultdict(str, credentials)
 
     # AWSリクエストの作成
     aws_request = AWSRequest(
@@ -71,8 +70,10 @@ async def process_async_http_request(connection_id, data):
     )
 
     # SigV4で署名
-    print(f"aws_request.headers: {aws_request.headers}")
-    SigV4Auth(credentials, "execute-api", f"{REGION}").add_auth(aws_request)
+    print(f"aws_request.keys {aws_request.keys()} aws_request.headers: {aws_request.headers}")
+    auth = SigV4Auth(credentials, "execute-api", "{region}")
+    print(f"auth: {auth}")
+    auth.add_auth(aws_request)
     print(f"aws_request.headers {aws_request.headers}")
     print(f"aws_request.headers {dict(aws_request.headers)}")
 
