@@ -54,7 +54,8 @@ async def process_async_http_request(connection_id, data):
         'session_token': aws_session_token,
         'region': aws_region,
         'account_id': identity['Account'],
-        'arn': identity['Arn']
+        'arn': identity['Arn'],
+        'token': ''
     }
 
     # AWSリクエストの作成
@@ -63,8 +64,7 @@ async def process_async_http_request(connection_id, data):
         url=url,
         data=data,
         headers={
-            'Content-Type': 'application/json',
-            'token': ''
+            'Content-Type': 'application/json'
         }
     )
 
