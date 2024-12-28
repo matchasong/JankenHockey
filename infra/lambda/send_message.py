@@ -43,6 +43,9 @@ credentials: Credentials = boto3_session.get_credentials()
 # SigV4の署名を作成
 auth = SigV4Auth(credentials, "execute-api", f"{REGION}")
 
+# aiohttpのセッションを作成
+session = aiohttp.ClientSession()
+
 
 async def process_async_http_request(connection_id, data):
     """
@@ -56,6 +59,7 @@ async def process_async_http_request(connection_id, data):
     print(f"post_url: {url}")
 
     # AWSリクエストの作成
+    print(f"process_async_http_request before create aws_request duration: {time.perf_counter() - start_async}")
     aws_request = AWSRequest(
         method=METHOD_POST,
         url=url,
@@ -64,11 +68,11 @@ async def process_async_http_request(connection_id, data):
             'Content-Type': 'application/json'
         }
     )
+    print(f"process_async_http_request after create aws_request duration: {time.perf_counter() - start_async}")
 
     # SigV4で署名
     auth.add_auth(aws_request)
-
-    session = aiohttp.ClientSession()
+    print(f"process_async_http_request after add_auth duration: {time.perf_counter() - start_async}")
 
     async with session.post(
         url,
