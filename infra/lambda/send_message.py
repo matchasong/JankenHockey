@@ -79,13 +79,11 @@ async def process_async_http_request(connection_id, data):
     if session is None:
         session = aiohttp.ClientSession()
 
-    async with session.post(
+    session.post(
         url,
         headers=dict(aws_request.headers),
         data=data
-    ) as response:
-        print(f"response: {response.status}")
-        print(f"Headers: {response.headers}")
+    )
 
     print(f"process_async_http_request time: {time.perf_counter() - start_async}")
 
