@@ -79,7 +79,7 @@ async def process_async_http_request(connection_id, data):
     if session is None:
         session = aiohttp.ClientSession()
 
-    session.post(
+    await session.post(
         url,
         headers=dict(aws_request.headers),
         data=data
