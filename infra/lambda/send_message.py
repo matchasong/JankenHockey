@@ -68,14 +68,15 @@ async def process_async_http_request(connection_id, data):
     # SigV4で署名
     auth.add_auth(aws_request)
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            url,
-            headers=dict(aws_request.headers),
-            data=data
-        ) as response:
-            print(f"response: {response.status}")
-            print(f"Headers: {response.headers}")
+    session = aiohttp.ClientSession()
+
+    async with session.post(
+        url,
+        headers=dict(aws_request.headers),
+        data=data
+    ) as response:
+        print(f"response: {response.status}")
+        print(f"Headers: {response.headers}")
 
     print(f"process_async_http_request time: {time.perf_counter() - start_async}")
 
@@ -85,7 +86,6 @@ async def async_send_message(post_data, item):
     async_send_message
     """
     await process_async_http_request(item['id'], post_data)
-    # await asyncio.to_thread(apigw_management.post_to_connection(ConnectionId=item['id'], Data=post_data))
 
 
 async def async_main(tasks):
