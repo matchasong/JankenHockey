@@ -9,6 +9,24 @@ from botocore.auth import SigV4Auth
 from botocore.awsrequest import AWSRequest
 from botocore.credentials import Credentials
 
+
+class HTTPSessionManager:
+    """HTTPSessionManager
+    """
+    def __init__(self):
+        self.session = None
+
+    async def get_session(self):
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
+        return self.session
+    
+    async def close(self):
+        if self.session:
+            await self.session.close()
+            self.session = None
+
+
 # 定数
 CONNECTION_TABLE_NAME = "Connection"
 REGION = "ap-northeast-1"
@@ -43,8 +61,8 @@ credentials: Credentials = boto3_session.get_credentials()
 # SigV4の署名を作成
 auth = SigV4Auth(credentials, "execute-api", f"{REGION}")
 
-# aiohttpのセッションを作成
-session = None
+# HTTPセッションマネージャ
+session_manager = HTTPSessionManager()
 
 
 async def process_async_http_request(connection_id, data):
@@ -52,8 +70,6 @@ async def process_async_http_request(connection_id, data):
     process_async_http_request
     非同期でHTTPリクエストを送信
     """
-    global session
-
     start_async = time.perf_counter()
     print(f"connection_id: {connection_id}, data: {data}")
 
@@ -76,8 +92,7 @@ async def process_async_http_request(connection_id, data):
     auth.add_auth(aws_request)
     print(f"process_async_http_request after add_auth duration: {time.perf_counter() - start_async}")
 
-    if session is None:
-        session = aiohttp.ClientSession()
+    session = await session_manager.get_session()
 
     await session.post(
         url,
@@ -120,8 +135,13 @@ def handler(event, context):
 
     print(f"items:{items} time: {time.perf_counter() - start_time}")
 
-    tasks = [async_send_message(post_data, item) for item in items]
-    asyncio.run(async_main(tasks), debug=True)
+    try:
+        tasks = [async_send_message(post_data, item) for item in items]
+        asyncio.run(async_main(tasks), debug=True)
+    finally:
+        # Lambda実行終了時にセッションをクリーンアップ
+        if context.get_remaining_time_in_millis() < 1000:  # 残り時間が1秒未満の場合
+            asyncio.run(session_manager.close())
 
     print(f"async_main called time: {time.perf_counter() - start_time}")
 
