@@ -44,7 +44,7 @@ credentials: Credentials = boto3_session.get_credentials()
 auth = SigV4Auth(credentials, "execute-api", f"{REGION}")
 
 # aiohttpのセッションを作成
-session = aiohttp.ClientSession()
+session = None
 
 
 async def process_async_http_request(connection_id, data):
@@ -52,6 +52,8 @@ async def process_async_http_request(connection_id, data):
     process_async_http_request
     非同期でHTTPリクエストを送信
     """
+    global session
+
     start_async = time.perf_counter()
     print(f"connection_id: {connection_id}, data: {data}")
 
@@ -73,6 +75,9 @@ async def process_async_http_request(connection_id, data):
     # SigV4で署名
     auth.add_auth(aws_request)
     print(f"process_async_http_request after add_auth duration: {time.perf_counter() - start_async}")
+
+    if session is None:
+        session = aiohttp.ClientSession()
 
     async with session.post(
         url,
