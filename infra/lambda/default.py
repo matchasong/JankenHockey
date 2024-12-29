@@ -6,7 +6,6 @@ import boto3
 
 
 CONNECTION_TABLE_NAME = "Connection"
-SEND_MESSAGE_LAMBDA_NAME = "JankenHockeySendMessageFunction"
 
 # Dynamodbテーブルクライアント
 dynamodb = boto3.resource("dynamodb")
@@ -14,6 +13,7 @@ connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
 
 # lambdaクライアント
 lambda_client = boto3.client('lambda')
+send_message_lambda_name = os.environ.get('SEND_MESSAGE_LAMBDA_NAME')
 
 
 def handler(event, context):
@@ -41,7 +41,7 @@ def handler(event, context):
     }
 
     lambda_client.invoke(
-        FunctionName='target-function-name',
+        FunctionName=send_message_lambda_name,
         InvocationType='Event',
         Payload=json.dumps(payload)
     )
