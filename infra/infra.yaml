@@ -428,6 +428,14 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
 
+  JankenHockeySendMessagePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt JankenHockeySendMessageFunction.Arn
+      Principal: lambda.amazonaws.com
+      SourceArn: !GetAtt JankenHockeyDefaultFunction.Arn
+
   # API Gateway Deployment
   JankenHockeyAPIDeployment:
     Type: 'AWS::ApiGatewayV2::Deployment'
