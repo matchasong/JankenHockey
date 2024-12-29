@@ -235,7 +235,7 @@ Resources:
   JankenHockeySendMessageFunctionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: JankenHockeyFunctionRole
+      RoleName: JankenHockeySendMessageFunctionRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -266,7 +266,7 @@ Resources:
   JankenHockeyDefaultFunctionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: JankenHockeyFunctionRole
+      RoleName: JankenHockeyDefaultFunctionRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
