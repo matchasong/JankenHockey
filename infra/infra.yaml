@@ -244,10 +244,10 @@ Resources:
                 Action:
                   - execute-api:ManageConnections
                 Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*/*
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource: !GetAtt JankenHockeyDefaultFunction.Arn
+              # - Effect: Allow
+              #   Action:
+              #     - lambda:InvokeFunction
+              #   Resource: !GetAtt JankenHockeyDefaultFunction.Arn
 
   ## API Gateway
   # API Gateway IAMロール
