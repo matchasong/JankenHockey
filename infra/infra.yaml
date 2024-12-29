@@ -157,6 +157,7 @@ Resources:
         S3Key: !Ref LambdaZipFile
       Runtime: python3.12
       Timeout: 30
+      MemorySize: 10240
       Tags:
         - Key: Project
           Value: JankenHockey
