@@ -5,12 +5,6 @@ import time
 
 import boto3
 
-CONNECTION_TABLE_NAME = "Connection"
-
-# Dynamodbに接続
-dynamodb = boto3.resource("dynamodb")
-connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
-
 # API Gateway Management APIに接続
 api_endpoint = os.environ.get('API_ENDPOINT')
 stage = os.environ.get('STAGE')
@@ -41,14 +35,11 @@ def handler(event, context):
     print(f"stage: {stage}, api_endpoint: {api_endpoint}, {url}")
     print(f"event: {event}")
 
-    post_data = json.loads(event.get('body', '{}')).get('data')
+    post_data = json.loads(event.get('body', '{}')).get('post_data')
     print(f"post_data: {post_data} time: {start_time - time.perf_counter()}")
-
-    items = connection_table.scan(ProjectionExpression='id').get('Items')
-    if items is None:
-        return {'statusCode': 500, 'body': 'no connection'}
-
-    print(f"items:{items} time: {time.perf_counter() - start_time}")
+    
+    items = json.loads(event.get('body', '{}')).get('items')
+    print(f"items: {post_data} time: {start_time - time.perf_counter()}")
 
     tasks = [async_send_message(post_data, item) for item in items]
     asyncio.run(async_main(tasks), debug=True)
