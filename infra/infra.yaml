@@ -388,10 +388,6 @@ Resources:
     Type: 'AWS::ApiGatewayV2::Deployment'
     Properties:
       ApiId: !Ref JankenHockeyAPI
-    DependsOn:
-      - JankenHockeyAPIConnectRoute
-      - JankenHockeyAPIDisconnectRoute
-      - JankenHockeyAPIDefaultRoute
 
   # API Gateway ステージおよびログ出力設定
   JankenHockeyAPIStage:
