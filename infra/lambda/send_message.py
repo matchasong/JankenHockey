@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 import time
 
@@ -35,10 +34,10 @@ def handler(event, context):
     print(f"stage: {stage}, api_endpoint: {api_endpoint}, {url}")
     print(f"event: {event}")
 
-    post_data = json.loads(event.get('body', '{}')).get('post_data')
+    post_data = event.get("data")
     print(f"post_data: {post_data} time: {start_time - time.perf_counter()}")
-    
-    items = json.loads(event.get('body', '{}')).get('items')
+
+    items = event.get("items")
     print(f"items: {post_data} time: {start_time - time.perf_counter()}")
 
     tasks = [async_send_message(post_data, item) for item in items]
