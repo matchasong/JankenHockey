@@ -151,7 +151,7 @@ Resources:
     Properties:
       FunctionName: JankenHockeySendMessageFunction
       Handler: send_message.handler
-      Role: !GetAtt JankenHockeyFunctionRole.Arn
+      Role: !GetAtt JankenHockeySendMessageFunctionRole.Arn
       Code:
         S3Bucket: !Ref LambdaBucket
         S3Key: !Ref LambdaZipFile
@@ -173,7 +173,7 @@ Resources:
     Properties:
       FunctionName: JankenHockeyDefaultFunction
       Handler: default.handler
-      Role: !GetAtt JankenHockeyFunctionRole.Arn
+      Role: !GetAtt JankenHockeyDefaultFunctionRole.Arn
       Code:
         S3Bucket: !Ref LambdaBucket
         S3Key: !Ref LambdaZipFile
@@ -183,11 +183,6 @@ Resources:
       Tags:
         - Key: Project
           Value: JankenHockey
-      Environment:
-        Variables:
-          CONNECTION_TABLE: !Ref JankenHockeyConnectionTable
-          API_ENDPOINT: !GetAtt JankenHockeyAPI.ApiEndpoint
-          STAGE: prod
 
   # Lambda関数
   JankenHockeyDisconnectFunction:
@@ -236,6 +231,29 @@ Resources:
                 Action:
                   - dynamodb:*
                 Resource: !GetAtt JankenHockeyGameHistoryTable.Arn
+ 
+  JankenHockeySendMessageFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: JankenHockeyFunctionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: JankenHockeyCallAPIPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
               - Effect: Allow
                 Action:
                   - execute-api:Invoke
@@ -244,10 +262,37 @@ Resources:
                 Action:
                   - execute-api:ManageConnections
                 Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*/*
-              # - Effect: Allow
-              #   Action:
-              #     - lambda:InvokeFunction
-              #   Resource: !GetAtt JankenHockeyDefaultFunction.Arn
+                
+  JankenHockeyDefaultFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: JankenHockeyFunctionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeSendMessageFunctionPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - dynamodb:*
+                Resource: !GetAtt JankenHockeyConnectionTable.Arn
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt JankenHockeySendMessageFunction.Arn
 
   ## API Gateway
   # API Gateway IAMロール
