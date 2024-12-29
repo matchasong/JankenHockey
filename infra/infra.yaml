@@ -156,7 +156,29 @@ Resources:
         S3Bucket: !Ref LambdaBucket
         S3Key: !Ref LambdaZipFile
       Runtime: python3.12
-      Timeout: 30
+      Timeout: 5
+      MemorySize: 10240
+      Tags:
+        - Key: Project
+          Value: JankenHockey
+      Environment:
+        Variables:
+          CONNECTION_TABLE: !Ref JankenHockeyConnectionTable
+          API_ENDPOINT: !GetAtt JankenHockeyAPI.ApiEndpoint
+          STAGE: prod
+
+  # Lambda関数
+  JankenHockeyDefaultFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: JankenHockeyDefaultFunction
+      Handler: default.handler
+      Role: !GetAtt JankenHockeyFunctionRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaBucket
+        S3Key: !Ref LambdaZipFile
+      Runtime: python3.12
+      Timeout: 1
       MemorySize: 10240
       Tags:
         - Key: Project
@@ -222,6 +244,10 @@ Resources:
                 Action:
                   - execute-api:ManageConnections
                 Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*/*
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt JankenHockeyDefaultFunction.Arn
 
   ## API Gateway
   # API Gateway IAMロール
@@ -255,6 +281,10 @@ Resources:
                 Resource: !GetAtt JankenHockeyDisconnectFunction.Arn
               - Effect: Allow
                 Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt JankenHockeyDefaultFunction.Arn
+              - Effect: Allow
+                Action:
                   - 'execute-api:ManageConnections'
                   - 'execute-api:InvalidateCache'
                 Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*'
@@ -277,7 +307,7 @@ Resources:
         - - !Ref JankenHockeyAPI
           - access-logs
 
-# Connect Route
+  # Connect Route
   JankenHockeyAPIConnectRoute:
     Type: 'AWS::ApiGatewayV2::Route'
     Properties:
@@ -311,20 +341,20 @@ Resources:
       PayloadFormatVersion: 1.0
       CredentialsArn: !GetAtt JankenHockeyAPIRole.Arn
 
-  # sendMessage Route
-  JankenHockeyAPISendMessageRoute:
+  # Default Route
+  JankenHockeyAPIDefaultRoute:
     Type: 'AWS::ApiGatewayV2::Route'
     Properties:
       ApiId: !Ref JankenHockeyAPI
-      RouteKey: sendMessage
-      Target: !Sub 'integrations/${JankenHockeyAPISendMessageIntegration}'
+      RouteKey: default
+      Target: !Sub 'integrations/${JankenHockeyAPIDefaultIntegration}'
 
-  JankenHockeyAPISendMessageIntegration:
+  JankenHockeyAPIDefaultIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
     Properties:
       ApiId: !Ref JankenHockeyAPI
       IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeySendMessageFunction.Arn}/invocations'
+      IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JankenHockeyDefaultFunction.Arn}/invocations'
       PayloadFormatVersion: 1.0
       CredentialsArn: !GetAtt JankenHockeyAPIRole.Arn
 
@@ -345,11 +375,11 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
 
-  JankenHockeySendMessagePermission:
+  JankenHockeyDefaultPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt JankenHockeySendMessageFunction.Arn
+      FunctionName: !GetAtt JankenHockeyDefaultFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*
 
@@ -361,10 +391,10 @@ Resources:
     DependsOn:
       - JankenHockeyAPIConnectRoute
       - JankenHockeyAPIDisconnectRoute
-      - JankenHockeyAPISendMessageRoute
+      - JankenHockeyAPIDefaultRoute
       - JankenHockeyAPIConnectIntegration
       - JankenHockeyAPIDisconnectIntegration
-      - JankenHockeyAPISendMessageIntegration
+      - JankenHockeyAPIDefaultIntegration
 
   # API Gateway ステージおよびログ出力設定
   JankenHockeyAPIStage:
