@@ -392,9 +392,9 @@ Resources:
       - JankenHockeyAPIConnectRoute
       - JankenHockeyAPIDisconnectRoute
       - JankenHockeyAPIDefaultRoute
-      - JankenHockeyAPIConnecttRoute
+      - JankenHockeyAPIConnectRoute
       - JankenHockeyAPIDisconnectRoute
-      - JankenHockeyAPIDefaulttRoute
+      - JankenHockeyAPIDefaultRoute
 
   # API Gateway ステージおよびログ出力設定
   JankenHockeyAPIStage:
