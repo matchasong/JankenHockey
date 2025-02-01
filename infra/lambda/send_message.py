@@ -15,6 +15,9 @@ CONNECTION_TABLE_NAME = "Connection"
 dynamodb = boto3.resource("dynamodb")
 connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
 
+# その他定数
+DEFALUT_PLAYER_NAME = "player"
+
 async def async_send_message(post_data, item):
     """
     async_send_message
@@ -44,9 +47,26 @@ def handler(event, context):
     items = event.get("items")
     print(f"items: {post_data} time: {start_time - time.perf_counter()}")
 
-    # 2人目が接続した時点で、ゲーム開始とする
-    return_value = connection_table.scan()
-    print(return_value)
+    clients_data = connection_table.scan()
+    print(clients_data)
+    if clients_data["Items"]["Count"] == 1:
+        _type = "wait"
+        post_data = {
+            "type": _type
+        }
+        print(f"wait post_data: {post_data} time: {start_time - time.perf_counter()}")
+    else:
+        # 2人目が接続した時点で、ゲーム開始とする
+        _type = "start"
+        for c in clients_data["Items"]:
+            if c["id"] != items[0]["id"]:
+                opponent_name = c.get("name", DEFALUT_PLAYER_NAME)
+
+        post_data = {
+            "type": _type,
+            "opponent": opponent_name
+        }
+        print(f"start post_data: {post_data} time: {start_time - time.perf_counter()}")
 
     tasks = [async_send_message(post_data, item) for item in items]
     asyncio.run(async_main(tasks), debug=True)
