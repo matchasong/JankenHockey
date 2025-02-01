@@ -49,7 +49,7 @@ def handler(event, context):
 
     clients_data = connection_table.scan()
     print(clients_data)
-    if clients_data["Items"]["Count"] == 1:
+    if clients_data["Count"] == 1:
         _type = "wait"
         post_data = {
             "type": _type
