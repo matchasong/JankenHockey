@@ -22,7 +22,7 @@ def handler(event, context):
 
     result = connection_table.delete_item(Key={'id': connection_id})
     print(f"result: {result}")
-    
+
     print(f"END {os.path.basename(__file__)}")
 
     return {

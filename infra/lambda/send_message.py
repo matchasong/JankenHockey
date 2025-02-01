@@ -10,6 +10,10 @@ stage = os.environ.get('STAGE')
 url = F"{api_endpoint}/{stage}".replace('wss', 'https')
 apigw_management = boto3.client('apigatewaymanagementapi', endpoint_url=F"{url}")
 
+# Dynamodbに接続
+CONNECTION_TABLE_NAME = "Connection"
+dynamodb = boto3.resource("dynamodb")
+connection_table = dynamodb.Table(CONNECTION_TABLE_NAME)
 
 async def async_send_message(post_data, item):
     """
@@ -39,6 +43,10 @@ def handler(event, context):
 
     items = event.get("items")
     print(f"items: {post_data} time: {start_time - time.perf_counter()}")
+
+    # 2人目が接続した時点で、ゲーム開始とする
+    return_value = connection_table.scan()
+    print(return_value)
 
     tasks = [async_send_message(post_data, item) for item in items]
     asyncio.run(async_main(tasks), debug=True)

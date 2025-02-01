@@ -21,6 +21,9 @@ socket.onopen = function() {
 
 socket.onmessage = function(e) {
     console.log(e.data);
+    if (e.data == "start"){
+        message.value = "対戦を開始します";
+    }
 };
 
 function send() {
