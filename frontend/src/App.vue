@@ -21,8 +21,9 @@ socket.onopen = function() {
 
 socket.onmessage = function(e) {
     console.log(e.data);
-    if (e.data == "start"){
+    if (e.data.type == "start"){
         message.value = "対戦を開始します";
+        opponent.name = e.data.opponent_name;
     }
 };
 
