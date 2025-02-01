@@ -265,6 +265,14 @@ Resources:
                 Action:
                   - execute-api:ManageConnections
                 Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${JankenHockeyAPI}/*/*/*/*
+              - Effect: Allow
+                Action:
+                  - dynamodb:*
+                Resource: !GetAtt JankenHockeyConnectionTable.Arn
+              - Effect: Allow
+                Action:
+                  - dynamodb:*
+                Resource: !GetAtt JankenHockeyGameHistoryTable.Arn
                 
   JankenHockeyDefaultFunctionRole:
     Type: AWS::IAM::Role
