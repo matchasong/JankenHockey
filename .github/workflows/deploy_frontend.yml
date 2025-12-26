@@ -20,8 +20,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # シークレットがない場合はジョブ全体をスキップ
-    if: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN != '' }}
+    # 公開リポジトリの場合はスキップ
+    if: ${{ github.repository == 'matchasong/JankenHockey' }}
 
     steps:
       - name: Checkout code
