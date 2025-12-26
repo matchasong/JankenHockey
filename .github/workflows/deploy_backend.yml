@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # 公開リポジトリの場合はスキップ
-    if: ${{ github.repository == 'matchasong/JankenHockey' }}
+    if: ${{ github.repository != 'matchasong/JankenHockey' }}
 
     strategy:
       matrix:
