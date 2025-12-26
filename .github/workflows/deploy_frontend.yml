@@ -20,6 +20,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    # 公開リポジトリの場合はスキップ
+    if: ${{ github.repository != 'matchasong/JankenHockey' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

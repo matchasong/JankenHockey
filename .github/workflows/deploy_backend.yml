@@ -18,6 +18,10 @@ jobs:
   deploy:
     name: Auto Deploy Backend
     runs-on: ubuntu-latest
+
+    # 公開リポジトリの場合はスキップ
+    if: ${{ github.repository != 'matchasong/JankenHockey' }}
+
     strategy:
       matrix:
         python-version: ["3.12"]
