@@ -1,0 +1,11 @@
+// APIエンドポイント定数を定義
+// REST APIはCloudFrontと同一ドメインのため相対パスで記述
+// %WS_API_ID%は置き換え文字で、実際のAPI IDに置き換えて利用します。setup-endpoint-js.shスクリプトで自動置き換えできます。
+export const API_LIST_ROOMS = '/apiprod/rooms';
+export const WS_GAME_URL = 'wss://%WS_API_ID%.execute-api.ap-northeast-1.amazonaws.com/prod';
+export const API_CREATE_ROOM = '/apiprod/rooms/create';
+export const API_JOIN_ROOM = '/apiprod/rooms/join';
+export const API_AUTH = '/apiprod/auth';
+export const API_SAVE_CPU_BATTLE_HISTORY = '/apiprod/cpu-battle/history';
+export const API_SAVE_GUEST_CPU_BATTLE_HISTORY = '/apiprod/cpu-battle/guest-history';
+

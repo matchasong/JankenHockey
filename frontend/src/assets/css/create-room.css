@@ -1,0 +1,114 @@
+/* create-room-css.css */
+
+.create-room-container {
+  max-width: 500px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 2rem 2.5rem 2.5rem 2.5rem;
+  font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, 'メイリオ', sans-serif;
+  position: relative;
+}
+
+.create-room-header {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.create-room-header .logout-button-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.create-room-header .logout-btn {
+  padding: 6px 12px;
+  font-size: 0.85em;
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  background: #fff;
+  color: #dc3545;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.create-room-header .logout-btn:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+.create-room-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #3aafa9;
+  text-align: center;
+}
+
+.create-room-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.create-room-form label {
+  font-weight: 500;
+  color: #2b3a55;
+  margin-bottom: 0.3rem;
+}
+
+.create-room-form input,
+.create-room-form textarea {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #bfc9d9;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.create-room-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.create-room-actions button.create {
+  background: #3aafa9;
+  color: #fff;
+  border: 1px solid #3aafa9;
+  border-radius: 6px;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.create-room-actions button.create:hover:not(:disabled) {
+  background: #2b3a55;
+  color: #fff;
+  border: 1px solid #2b3a55;
+}
+
+.create-room-actions button.cancel {
+  background: #bfc9d9;
+  color: #2b3a55;
+  border: 1px solid #bfc9d9;
+  border-radius: 6px;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.create-room-actions button.cancel:hover:not(:disabled) {
+  background: #2b3a55;
+  color: #fff;
+  border: 1px solid #2b3a55;
+}
+
+.player-name-display{
+  color: #2b3a55;
+}
