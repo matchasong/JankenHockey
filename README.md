@@ -1,1 +1,1 @@
-Janken Hockey
+Janken Hockey じゃんけんホッケー!
