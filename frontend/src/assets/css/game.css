@@ -1,0 +1,463 @@
+main {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  flex-direction: row;
+  min-width: 320px;
+  min-height: 480px;
+  box-sizing: border-box;
+  justify-content: center;
+  overflow: hidden;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+#left {
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    height: 100%;
+    background-color: #f5f7fa;
+    align-items: center;
+    justify-content: center;
+    border-right: 3px solid #bfc9d9;
+    box-sizing: border-box;
+    padding: 0 1rem;
+}
+
+#right {
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    min-width: 200px;
+    height: 100%;
+    color: black;
+    box-sizing: border-box;
+}
+
+.timer-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #3aafa9;
+    border-bottom: 2px solid #2b7a78;
+    height: 8%;
+    color: #fff;
+}
+
+
+#right-top, .player-self {
+    display: flex;
+    background-color: #e3f2fd;
+    border-bottom: 2px solid #90caf9;
+    height: 9%;
+    align-items: center;
+    padding: 0 1rem;
+    font-size: 1.1rem;
+}
+
+#right-middle, .player-opponent {
+    display: flex;
+    background-color: #fff3e0;
+    border-bottom: 2px solid #ffb74d;
+    height: 9%;
+    align-items: center;
+    padding: 0 1rem;
+    font-size: 1.1rem;
+}
+
+#right-bottom {
+    width: 100%;
+    display: flex;
+    background-color: #f5f7fa;
+    border-top: 2px solid #bfc9d9;
+    height: 27%;
+    justify-content: center;
+    padding: 0.5rem;
+    font-size: 1.15rem;
+    line-height: 1.5;
+    text-align: center;
+    word-break: break-word;
+    white-space: pre-line;
+}
+
+#next-hands {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-top: 2px solid #bfc9d9;
+    border-bottom: 2px solid #bfc9d9;
+    height: 47%;
+    padding: 0.5rem;
+    overflow-y: auto;
+}
+
+.license-notice {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  font-size: 10px;
+  color: #666;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.license-notice a {
+  color: #666;
+  text-decoration: none;
+}
+
+.license-notice a:hover {
+  text-decoration: underline;
+}
+
+.return-to-top-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 90px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, box-shadow 0.3s;
+  z-index: 1000;
+}
+
+.return-to-top-btn:hover {
+  background-color: #2b7a78;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.return-to-top-btn:active {
+  background-color: #1f5c5a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.cancel-game-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 90px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, box-shadow 0.3s;
+  z-index: 998;
+  opacity: 0.6;
+}
+
+.cancel-game-btn:hover {
+  background-color: #5a6268;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: 0.8;
+}
+
+.cancel-game-btn:active {
+  background-color: #495057;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.control-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.move-btn {
+  background-color: #3aafa9;
+  color: white;
+  border: none;
+  /* Responsive sizing: font and padding scale with viewport but stay within sensible bounds */
+  padding: 0.75rem 1rem;
+  font-size: 1vw;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.move-btn:hover {
+  background-color: #2b7a78;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.move-btn:active {
+  background-color: #1f5c5a;
+  transform: scale(0.95);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.left-btn {
+  /* width scales with viewport but is clamped to avoid too small/large */
+  width: clamp(56px, 10vw, 120px);
+  height: clamp(20px, 5vw, 50px);
+}
+
+.right-btn {
+  width: clamp(56px, 10vw, 120px);
+  height: clamp(20px, 5vw, 50px);
+}
+
+/* Modal overlay styles */
+.modal-overlay {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.cancel-confirm {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Modal content styles */
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 10px #888;
+  min-width: 300px;
+  text-align: center;
+}
+
+.modal-title {
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+  color: #222;
+  font-size: 1.1rem;
+}
+
+.modal-message {
+  margin-bottom: 1.5rem;
+  color: #555;
+}
+
+.modal-actions {
+  text-align: center;
+}
+
+.modal-actions.button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Modal button styles */
+.modal-btn {
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.modal-btn.ok {
+  background-color: #3aafa9;
+}
+
+.modal-btn.cancel-action {
+  background-color: #dc3545;
+}
+
+.modal-btn.cancel-dismiss {
+  background-color: #6c757d;
+}
+
+/* Timer text style */
+.timer-text {
+  font-weight: bold;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+/* Player labels */
+.player-label {
+  font-weight: bold;
+  color: black;
+}
+
+/* Next hands section styles */
+.next-hands-section {
+  margin-bottom: 1rem;
+}
+
+.next-hands-title {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.next-hands-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.waiting-message {
+  text-align: center;
+  color: #666;
+}
+
+/* Board コンポーネントが出力する SVG を以下で制御する。
+   aspect-ratio で縦横比を固定し、max-height で画面に収まるように制限する。 */
+#left svg,
+#left > .board-wrapper,
+#left > .board {
+  width: 100%;
+  max-width: 600px;               /* 好きな最大幅に調整 */
+  aspect-ratio: 1 / 2;           /* 幅:高さ = 1:2 */
+  height: auto;                  /* 幅に追従して高さを決める */
+  max-height: calc(100vh - 180px);/* ヘッダ等を考慮した高さ上限。必要に応じて調整 */
+  display: block;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  main {
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #left {
+    width: 100%;
+    height: 60vh;
+    border-right: none;
+    border-bottom: 3px solid #bfc9d9;
+    padding: 0.5rem;
+  }
+
+  #right {
+    width: 100%;
+    height: 40vh;
+    min-width: 0;
+  }
+
+  .timer-display {
+    height: 15%;
+  }
+
+  #right-top, .player-opponent {
+    height: 18%;
+    padding: 0 0.5rem;
+    font-size: 1rem;
+  }
+
+  #right-middle, .player-self {
+    height: 18%;
+    padding: 0 0.5rem;
+    font-size: 1rem;
+  }
+
+  #next-hands {
+    height: 34%;
+    padding: 0.25rem;
+  }
+
+  #right-bottom {
+    height: 15%;
+    padding: 0.25rem;
+    font-size: 1rem;
+  }
+
+  .control-buttons {
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .move-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.5rem;
+  }
+
+  .license-notice {
+    font-size: 8px;
+    padding: 1px 3px;
+  }
+
+  .return-to-top-btn,
+  .cancel-game-btn {
+    bottom: 10px;
+    right: 10px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+}
+
+/* 小画面対策：幅が狭いときは max-width を小さくする */
+@media (max-width: 480px) {
+  #left svg,
+  #left > .board-wrapper,
+  #left > .board {
+    max-width: 320px;
+    max-height: calc(100vh - 140px);
+  }
+}
+/* Extra small devices (iPhone SE, iPhone 13 mini, small phones) */
+@media (max-width: 390px) {
+  #left {
+    height: 55vh;
+  }
+
+  #right {
+    height: 45vh;
+  }
+
+  .move-btn {
+    padding: 0.5rem 1rem;
+    font-size: 1.25rem;
+  }
+
+  #right-bottom {
+    font-size: 0.9rem;
+  }
+
+  .next-hands-container svg {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* Landscape mode for mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  main {
+    flex-direction: row;
+  }
+
+  #left {
+    width: 60%;
+    height: 100vh;
+    border-right: 3px solid #bfc9d9;
+    border-bottom: none;
+  }
+
+  #right {
+    width: 40%;
+    height: 100vh;
+  }
+}

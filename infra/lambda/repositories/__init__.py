@@ -1,0 +1,4 @@
+from .room_repository import RoomRepository
+from .connection_repository import ConnectionRepository
+from .game_history_repository import GameHistoryRepository
+
