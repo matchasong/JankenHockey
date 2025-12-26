@@ -1,1 +1,1 @@
-# Janken Hockey(じゃんけんホッケー)
+# Janken Hockey じゃんけんホッケー
