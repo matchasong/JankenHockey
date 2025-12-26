@@ -18,7 +18,9 @@ jobs:
   deploy:
     name: Auto Deploy Backend
     runs-on: ubuntu-latest
-    if: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN != '' }} # シークレットがない場合はジョブ全体をスキップ
+
+    # シークレットがない場合はジョブ全体をスキップ
+    if: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN != '' }}
 
     strategy:
       matrix:
