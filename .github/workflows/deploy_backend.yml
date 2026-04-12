@@ -6,6 +6,7 @@ on:
     paths:
       - "infra/**"
       - "!infra/README.md"
+    workflow_dispatch:
 
 env:
   AWS_REGION: "ap-northeast-1"
