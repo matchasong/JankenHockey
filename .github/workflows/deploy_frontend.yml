@@ -6,9 +6,10 @@ on:
     paths:
       - "frontend/**"
       - "!frontend/README.md"
+    workflow_dispatch:
 
 env:
-  NODE_VERSION: "24.12.0"
+  NODE_VERSION: "24.13.0"
   AWS_REGION: "ap-northeast-1" # 東京リージョン
   CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} # CloudFrontのディストリビューションID
 
